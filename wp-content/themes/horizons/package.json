@@ -1,0 +1,44 @@
+{
+  "name": "horizons",
+  "version": "1.0.0",
+  "main": "src/main.js",
+  "dependencies": {
+    "glob": "^9.2.1",
+    "jquery": "3.6.0",
+    "popper.js": "^1.16.1",
+    "postcss-loader": "^7.0.2",
+    "postcss-preset-env": "^8.0.1",
+    "yarn": "^1.22.19"
+  },
+  "scripts": {
+    "prod": "cross-env NODE_ENV=production webpack --mode production --progress",
+    "dev": "cross-env NODE_ENV=development webpack --watch --mode development --progress",
+    "clean": "rm -rf build/*",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT",
+  "description": "",
+  "devDependencies": {
+    "@babel/core": "^7.21.0",
+    "@babel/preset-env": "^7.20.2",
+    "@babel/preset-react": "^7.18.6",
+    "babel-loader": "^9.1.2",
+    "clean-webpack-plugin": "^4.0.0",
+    "cross-env": "^7.0.3",
+    "css-loader": "^6.7.3",
+    "cssnano": "^5.1.15",
+    "file-loader": "^6.2.0",
+    "mini-css-extract-plugin": "^2.7.3",
+    "optimize-css-assets-webpack-plugin": "^6.0.1",
+    "purgecss-webpack-plugin": "^5.0.0",
+    "style-loader": "^3.3.1",
+    "uglifyjs-webpack-plugin": "^2.2.0",
+    "url-loader": "^4.1.1",
+    "webpack": "^5.76.0",
+    "webpack-cli": "^5.0.1"
+  },
+  "browserslist": [
+    "defaults"
+  ]
+}

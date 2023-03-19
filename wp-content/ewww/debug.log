@@ -1,0 +1,47 @@
+2023-03-18 14:30:39
+<b>EIO_Base::content_url()</b>
+upload_url: http://horizons.local/wp-content/uploads/
+<b>EIO_Base::__construct()</b>
+plugin (resource) content_url: http://horizons.local/wp-content/ewww/
+plugin (resource) content_dir: C:\Users\Administrator\Local Sites\horizons\app\public/wp-content/ewww/
+home url: http://horizons.local/
+relative home url: //horizons.local/
+home domain: horizons.local
+site/upload url: http://horizons.local
+site/upload domain: horizons.local
+<b>EIO_Backup::__construct()</b>
+<b>ewww_image_optimizer_image_sizes()</b>
+<b>ewww_image_optimizer_init()</b>
+checking active plugins
+<b>EIO_Base::content_url()</b>
+upload_url: http://horizons.local/wp-content/uploads/
+<b>EIO_Base::__construct()</b>
+plugin (resource) content_url: http://horizons.local/wp-content/ewww/
+plugin (resource) content_dir: C:\Users\Administrator\Local Sites\horizons\app\public/wp-content/ewww/
+home url: http://horizons.local/
+relative home url: //horizons.local/
+home domain: horizons.local
+site/upload url: http://horizons.local
+site/upload domain: horizons.local
+<b>EIO_Lazy_Load::__construct()</b>
+request uri is /wp-admin/admin-ajax.php?action=wp_ewwwio_test_optimize&nonce=a81d4384d8
+is_admin
+<b>ewww_image_optimizer_admin_init()</b>
+<b>EIO_Base::content_url()</b>
+upload_url: http://horizons.local/wp-content/uploads/
+<b>EIO_Base::__construct()</b>
+plugin (resource) content_url: http://horizons.local/wp-content/ewww/
+plugin (resource) content_dir: C:\Users\Administrator\Local Sites\horizons\app\public/wp-content/ewww/
+home url: http://horizons.local/
+relative home url: //horizons.local/
+home domain: horizons.local
+site/upload url: http://horizons.local
+site/upload domain: horizons.local
+<b>ewww_image_optimizer_cloud_init()</b>
+<b>ewww_image_optimizer_upgrade()</b>
+<b>ewww_image_optimizer_exec_init()</b>
+<b>ewww_image_optimizer_cron_setup()</b>
+<b>ewww_image_optimizer_ajax_compat_check()</b>
+doing wp_ewwwio_test_optimize
+<b>EWWWIO_Tracking::schedule_send()</b>
+<b>EWWWIO_Test_Optimize_Handler::handle()</b>

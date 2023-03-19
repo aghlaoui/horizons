@@ -1,0 +1,27 @@
+/* ----------------------------------------------------------------
+			[ All Css Plugins & Helper Classes File ]
+-----------------------------------------------------------------*/
+
+/* == bootstrap == */
+@import './plugins/bootstrap.min.css';
+
+/* == owl.carousel == */
+@import './plugins/owl.carousel.min.css';
+@import './plugins/owl.theme.default.min.css';
+
+/* == animate css == */
+@import './plugins/animate.min.css';
+
+/* == themify & flaticon icons ==*/
+@import './plugins/themify-icons.css';
+@import './plugins/flaticon.css';
+
+/* == magnific-popup gallery  == */
+@import './plugins/magnific-popup.css';
+
+/* == YouTubePopUp == */
+@import './plugins/YouTubePopUp.css';
+
+/* == for booking css == */
+@import './plugins/select2.css';
+@import './plugins/datepicker.css';
