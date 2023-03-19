@@ -29,9 +29,17 @@ function horizons_scripts()
     wp_register_script('testScripts', get_theme_file_uri('/BUILD/main.js'));
     wp_enqueue_script('testScripts', false, array(), '1.0', true);
 
+    if (is_ssl()) {
+        $light_logo = str_replace('http://', 'https://', get_theme_mod('site_logo_light'));
+        $dark_logo = str_replace('http://', 'https://', get_theme_mod('site_logo_dark'));
+    } else {
+        $light_logo =  get_theme_mod('site_logo_light');
+        $dark_logo =  get_theme_mod('site_logo_dark');
+    }
+
     wp_localize_script('testScripts', 'horizonsData', array(
-        'light_logo' => get_theme_mod('site_logo_light'),
-        'dark_logo' => get_theme_mod('site_logo_dark'),
+        'light_logo' => $light_logo,
+        'dark_logo' => $dark_logo,
     ));
 }
 add_action('wp_enqueue_scripts', 'horizons_scripts');

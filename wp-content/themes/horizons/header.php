@@ -30,8 +30,8 @@
             <!-- Logo -->
             <div class="logo-wrapper navbar-brand valign">
                 <a href="<?php echo home_url() ?>">
-
-                    <div class="logo"> <img src="<?php echo get_theme_mod('site_logo_light') ?>" class="logo-img" alt=""> </div>
+                    <?php $the_logo = (is_ssl()) ? str_replace('http://', 'https://', get_theme_mod('site_logo_light')) : get_theme_mod('site_logo_light') ?>
+                    <div class="logo"> <img src="<?php echo $the_logo ?>" class="logo-img" alt=""> </div>
                 </a>
             </div>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"> <span class="icon-bar"><i class="ti-line-double"></i></span> </button>

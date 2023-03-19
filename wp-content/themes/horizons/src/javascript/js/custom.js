@@ -116,7 +116,8 @@ $(function () {
     // CountUp Numbers
     $('.numbers .count').countUp({
         delay: 10,
-        time: 1500
+        time: 1500,
+        once: true
     });
 
     // Testimonials owlCarousel *
