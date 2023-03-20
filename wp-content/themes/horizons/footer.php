@@ -51,7 +51,10 @@
                 <!-- about & social icons -->
                 <div class="col-md-4 widget-area">
                     <div class="widget clearfix">
-                        <div class="footer-logo"> <img class="img-fluid" src="<?php echo get_theme_mod('site_logo_light') ?>" alt=""> </div>
+                        <div class="footer-logo">
+                            <?php $footer_logo = (is_ssl()) ? str_replace('http://', 'https://', get_theme_mod('site_logo_light')) : get_theme_mod('site_logo_light') ?>
+                            <img class="img-fluid" src="<?php echo $footer_logo ?>" alt="">
+                        </div>
                         <div class="widget-text">
                             <p><?php echo sanitize_textarea_field(get_theme_mod('site_description')) ?></p>
                             <div class="social-icons">
