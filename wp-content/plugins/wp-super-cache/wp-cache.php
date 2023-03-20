@@ -33,7 +33,7 @@ define( 'WPSC_VERSION', '1.9.1-alpha' );
 
 require_once( __DIR__. '/inc/delete-cache-button.php');
 require_once( __DIR__. '/inc/preload-notification.php');
-
+add_filter('https_ssl_verify', '__return_false');
 if ( ! function_exists( 'wp_cache_phase2' ) ) {
 	require_once( __DIR__. '/wp-cache-phase2.php');
 }

@@ -17,7 +17,7 @@ $cache_enabled = true;
 $super_cache_enabled = true;
 $cache_max_time = 1800;
 //$use_flock = true; // Set it true or false if you know what to use
-$cache_path = 'C:\\Users\\Administrator\\LocalSites\\horizons\\app\\public\\wp-content/cache/';
+$cache_path = '/home/vol1_3/epizy.com/epiz_33828006/htdocs/wp-content/cache/';
 $file_prefix = 'wp-cache-';
 $ossdlcdn = 0;
 
@@ -106,4 +106,3 @@ $wpsc_save_headers = 0;
 $cache_schedule_interval = 'hourly';
 $wp_super_cache_comments = 1;
 $wpsc_version = 169;
-?>
