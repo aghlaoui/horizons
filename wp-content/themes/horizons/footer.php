@@ -53,7 +53,7 @@
                     <div class="widget clearfix">
                         <div class="footer-logo">
                             <?php $footer_logo = (is_ssl()) ? str_replace('http://', 'https://', get_theme_mod('site_logo_light')) : get_theme_mod('site_logo_light') ?>
-                            <img class="img-fluid" src="<?php echo $footer_logo ?>" alt="">
+                            <img height="46" width="140" class="img-fluid" src="<?php echo $footer_logo ?>" alt="">
                         </div>
                         <div class="widget-text">
                             <p><?php echo sanitize_textarea_field(get_theme_mod('site_description')) ?></p>

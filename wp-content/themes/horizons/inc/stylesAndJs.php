@@ -9,25 +9,35 @@ function horizons_scripts()
 {
     wp_deregister_script('jquery');
     wp_register_script('jquery', get_theme_file_uri('src/javascript/js/jquery.js'));
-    wp_enqueue_script('jquery', false, array(), false, false);
+    wp_enqueue_script('jquery', false, array(), false, true);
+    wp_script_add_data('jquery', 'defer', true);
+
+    wp_register_script('jquery-speed', get_theme_file_uri('src/javascript/js/jquery-speed-opt.js'));
+    wp_enqueue_script('jquery-speed', false, array(), false, true);
 
     wp_register_script('jquery_migrate', get_theme_file_uri('src/javascript/js/jquery-migrate-3.0.0.min.js'));
     wp_enqueue_script('jquery_migrate', false, array(), false, true);
+    wp_script_add_data('jquery_migrate', 'defer', true);
 
     wp_register_script('modernizr', get_theme_file_uri('src/javascript/js/modernizr-2.6.2.min.js'));
     wp_enqueue_script('modernizr', false, array(), false, true);
+    wp_script_add_data('modernizr', 'defer', true);
 
     wp_register_script('popper', get_theme_file_uri('src/javascript/js/popper.min.js'));
     wp_enqueue_script('popper', false, array(), false, true);
+    wp_script_add_data('popper', 'defer', true);
 
     wp_register_script('bootstrap', get_theme_file_uri('src/javascript/js/bootstrap.min.js'));
     wp_enqueue_script('bootstrap', false, array(), false, true);
+    wp_script_add_data('bootstrap', 'defer', true);
 
     wp_register_script('scripts', get_theme_file_uri('/BUILD/scripts.js'));
     wp_enqueue_script('scripts', false, array(), '1.0', true);
+    wp_script_add_data('scripts', 'defer', true);
 
     wp_register_script('testScripts', get_theme_file_uri('/BUILD/main.js'));
     wp_enqueue_script('testScripts', false, array(), '1.0', true);
+    wp_script_add_data('testScripts', 'defer', true);
 
     if (is_ssl()) {
         $light_logo = str_replace('http://', 'https://', get_theme_mod('site_logo_light'));
@@ -60,6 +70,13 @@ function load_wpcf7_scripts()
         }
     }
 }
+/*****************      gutenberg styles remover        ********************/
+function dm_remove_wp_block_library_css()
+{
+    wp_dequeue_style('wp-block-library');
+    wp_dequeue_style('classic-theme-styles');
+}
+add_action('wp_enqueue_scripts', 'dm_remove_wp_block_library_css');
 
 // function load_cf7_scripts()
 // {

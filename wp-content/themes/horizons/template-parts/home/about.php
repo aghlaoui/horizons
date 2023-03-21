@@ -46,7 +46,7 @@ if (!get_field('use_about_data')) {
                             if (!$status) {
                                 $thumbnail_url = get_the_post_thumbnail_url($pageID, 'aboutUsImage');
                             ?>
-                                <img src="<?php echo $thumbnail_url ?>" alt="" class="img-fluid">
+                                <img height="580" width="465" src="<?php echo $thumbnail_url ?>" alt="" class="img-fluid">
                                 <?php // the_post_thumbnail('aboutUsImage', array('class' => 'img-fluid')) 
                                 ?>
                             <?php } else {
