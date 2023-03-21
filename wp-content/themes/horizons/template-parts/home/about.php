@@ -51,7 +51,7 @@ if (!get_field('use_about_data')) {
                                 ?>
                             <?php } else {
                             ?>
-                                <img src="<?php echo get_field('image')['sizes']['aboutUsImage'] ?>" alt="" class="img-fluid">
+                                <img height="580" width="465" src="<?php echo get_field('image')['sizes']['aboutUsImage'] ?>" alt="" class="img-fluid">
                             <?php
                             } ?>
                         </div>

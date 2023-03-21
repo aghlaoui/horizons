@@ -54,6 +54,14 @@ function horizons_scripts()
 }
 add_action('wp_enqueue_scripts', 'horizons_scripts');
 
+
+function preload_my_font()
+{
+    echo '<link rel="preload" href="//fonts.googleapis.com/css2?family=Barlow:wght@300;400;500&amp;family=Poppins:wght@300;400;500;600;700&amp;display=swap">';
+}
+add_action('wp_head', 'preload_my_font');
+
+
 add_filter('wpcf7_load_js', '__return_false');
 add_filter('wpcf7_load_css', '__return_false');
 
