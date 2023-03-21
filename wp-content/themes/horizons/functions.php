@@ -39,6 +39,8 @@ function horizons_features()
 }
 add_filter('show_admin_bar', '__return_false');
 
+
+/****************** Adding meta_key to main query  **************/
 function custom_tax_archive_order($query)
 {
     if (!is_admin() && $query->is_main_query() && is_tax('destination')) {
@@ -55,23 +57,14 @@ add_action('template_redirect', 'disable_custom_post_type_single');
 
 function disable_custom_post_type_single()
 {
-    if (is_singular('testimonial')) {
+    if (is_singular('testimonial') || is_404()) {
         wp_redirect(home_url(), 301);
         exit();
     }
 }
 
-function redirect_404_to_homepage()
-{
-    if (is_404()) {
-        wp_redirect(home_url());
-        exit;
-    }
-}
-add_action('template_redirect', 'redirect_404_to_homepage');
 
-
-
+/*******************         Custom comments labels     *********************/
 function custom_comment_form_defaults($defaults)
 {
     $defaults['title_reply'] = 'Laisser un commentaire';
@@ -81,11 +74,3 @@ function custom_comment_form_defaults($defaults)
     return $defaults;
 }
 add_filter('comment_form_defaults', 'custom_comment_form_defaults');
-
-
-add_filter('ai1wm_exclude_content_from_export', 'excluded_fieles');
-function excluded_fieles($exclude_filters)
-{
-    $exclude_filters[] = 'themes/horizons/node_modules';
-    return $exclude_filters;
-}

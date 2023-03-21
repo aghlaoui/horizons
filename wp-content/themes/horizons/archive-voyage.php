@@ -1,15 +1,28 @@
 <?php get_header() ?>
-<?php pageBanner(null, array(
-    'big_title' => get_option('voyage_pbs_big_title'),
-    'small_title' => get_option('voyage_pbs_small_title'),
-    'banner_img' => get_option('voyage_pbs_image')
-)); ?>
+<?php
+$banner = get_field('voyage_banner', 'option');
+$banner_big_title = !empty($banner['big_title']) ? $banner['big_title'] : 'No Title Defined';
+$banner_secondary_title = !empty($banner['secondary_title']) ? $banner['secondary_title'] : 'No Title Defined';
+$banner_image = !empty($banner['photo']) ? $banner['photo']['sizes']['PageBanner'] : 'https://placehold.jp/0a457c/ffffff/1650x750.png?text=No%20image%20defined';
+pageBanner(null, array(
+    'big_title' => sanitize_text_field($banner_big_title),
+    'small_title' => sanitize_text_field($banner_secondary_title),
+    'banner_img' => esc_url($banner_image)
+));
+
+?>
 <section class="tours1 section-padding bg-lightnav" data-scroll-index="1">
     <div class="container">
         <div class="row">
             <div class="col-md-12">
-                <div class="section-subtitle"><span>Choose your place</span></div>
-                <div class="section-title">Popular <span>Tours</span></div>
+                <?php
+                $section = get_field('voyages_section', 'option');
+                $section_big_title = !empty($section['big_title']) ? $section['big_title'] : 'No Title Defined';
+                $secion_secondary_title = !empty($section['secondary_title']) ? $section['secondary_title'] : 'No Title Defined';
+                list($firstPart, $lastPart) = highlight_the_text($section_big_title);
+                ?>
+                <div class="section-subtitle"><span><?php echo sanitize_text_field($secion_secondary_title) ?></span></div>
+                <div class="section-title"><?php echo sanitize_text_field($firstPart) ?> <span><?php echo sanitize_text_field($lastPart) ?></span></div>
             </div>
         </div>
         <div class="row">

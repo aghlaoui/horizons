@@ -1,8 +1,13 @@
 <?php get_header() ?>
-<?php pageBanner(null, array(
-    'big_title' => get_option('hotel_pbs_big_title'),
-    'small_title' => get_option('hotel_pbs_small_title'),
-    'banner_img' => get_option('hotel_pbs_image')
+<?php
+$banner = get_field('hotel_banner', 'option');
+$banner_big_title = !empty($banner['big_title']) ? $banner['big_title'] : 'No Title Defined';
+$banner_secondary_title = !empty($banner['secondary_title']) ? $banner['secondary_title'] : 'No Title Defined';
+$banner_image = !empty($banner['photo']) ? $banner['photo']['sizes']['PageBanner'] : 'https://placehold.jp/0a457c/ffffff/1650x750.png?text=No%20image%20defined';
+pageBanner(null, array(
+    'big_title' => sanitize_text_field($banner_big_title),
+    'small_title' => sanitize_text_field($banner_secondary_title),
+    'banner_img' => esc_url($banner_image)
 )) ?>
 <div class="tours3 destination1 section-padding">
     <div class="container">

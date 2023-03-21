@@ -1,6 +1,6 @@
 <?php
 //admin_menu callback function
-add_action('admin_menu', 'add_tutorial_cpt_submenu_example');
+// add_action('admin_menu', 'add_tutorial_cpt_submenu_example');
 function add_tutorial_cpt_submenu_example()
 {
 
