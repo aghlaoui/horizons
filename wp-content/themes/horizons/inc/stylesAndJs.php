@@ -1,4 +1,5 @@
 <?php
+
 function horizons_styles()
 {
     wp_enqueue_style('Styles', get_theme_file_uri('/BUILD/css/styles.css'));
@@ -10,14 +11,12 @@ function horizons_scripts()
     wp_deregister_script('jquery');
     wp_register_script('jquery', get_theme_file_uri('src/javascript/js/jquery.js'));
     wp_enqueue_script('jquery', false, array(), false, true);
-    wp_script_add_data('jquery', 'defer', true);
 
     wp_register_script('jquery-speed', get_theme_file_uri('src/javascript/js/jquery-speed-opt.js'));
     wp_enqueue_script('jquery-speed', false, array(), false, true);
 
     wp_register_script('jquery_migrate', get_theme_file_uri('src/javascript/js/jquery-migrate-3.0.0.min.js'));
     wp_enqueue_script('jquery_migrate', false, array(), false, true);
-    wp_script_add_data('jquery_migrate', 'defer', true);
 
     wp_register_script('modernizr', get_theme_file_uri('src/javascript/js/modernizr-2.6.2.min.js'));
     wp_enqueue_script('modernizr', false, array(), false, true);
@@ -57,14 +56,13 @@ add_action('wp_enqueue_scripts', 'horizons_scripts');
 
 function preload_my_font()
 {
-    echo '<link rel="preload" href="//fonts.googleapis.com/css2?family=Barlow:wght@300;400;500&amp;family=Poppins:wght@300;400;500;600;700&amp;display=swap">';
+    echo '<link as="style" rel="stylesheet preload prefetch" href="//fonts.googleapis.com/css2?family=Barlow:wght@300;400;500&amp;family=Poppins:wght@300;400;500;600;700&amp;display=swap" crossorigin="anonymous" />';
 }
 add_action('wp_head', 'preload_my_font');
 
-
+/*****************      contact form 7 scripts and styles removal        ********************/
 add_filter('wpcf7_load_js', '__return_false');
 add_filter('wpcf7_load_css', '__return_false');
-
 
 add_action('wp_enqueue_scripts', 'load_wpcf7_scripts');
 function load_wpcf7_scripts()
@@ -85,6 +83,18 @@ function dm_remove_wp_block_library_css()
     wp_dequeue_style('classic-theme-styles');
 }
 add_action('wp_enqueue_scripts', 'dm_remove_wp_block_library_css');
+
+
+/*****************      add defer attributes to scripts        ********************/
+
+function defer_parsing_of_js($url)
+{
+    if (FALSE === strpos($url, '.js')) return $url;
+    if (strpos($url, 'jquery.js')) return $url;
+    return "$url' defer ";
+}
+add_filter('clean_url', 'defer_parsing_of_js', 11, 1);
+
 
 // function load_cf7_scripts()
 // {
