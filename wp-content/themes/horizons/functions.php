@@ -23,7 +23,12 @@ function horizons_features()
     /*          images sizes            */
     add_image_size('siteLogos', 300, 100);
     add_image_size('BlogThumb', 510, 725, true);
+
     add_image_size('PageBanner', 1650, 750, true);
+    add_image_size('PageBanner700w', 768, 750, true);
+    add_image_size('PageBanner991w', 991, 750, true);
+
+
     add_image_size('PostImage', 730, 510, true);
     add_image_size('PostImageThumbSm', 90, 65, true);
     add_image_size('VoyageThumb', 750, 530, true);

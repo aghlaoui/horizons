@@ -5,7 +5,11 @@
         while (have_rows('sliders')) {
             the_row();
         ?>
-            <div class="text-center item bg-img" data-overlay-dark="5" data-background="<?php echo get_sub_field('image')['sizes']['PageBanner'] ?>">
+            <div class="text-center item" data-overlay-dark="5">
+                <img class="item bg-img" srcset="<?php echo get_sub_field('image')['sizes']['PageBanner700w'] ?> 768w,
+                <?php echo get_sub_field('image')['sizes']['PageBanner991w'] ?> 991w" sizes="(max-width: 767px) 767px,
+            (max-width: 991px) 991px,
+            991px" alt="">
                 <div class="v-middle caption">
                     <div class="container">
                         <div class="row">

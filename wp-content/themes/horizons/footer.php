@@ -91,7 +91,7 @@
                         <h3 class="widget-title">Liens utiles</h3>
                         <ul>
                             <li><a href="<?php echo site_url('abou-us') ?>">A propos</a></li>
-                            <li><a href="<?php get_post_type_archive_link('voyage') ?>">Voyages</a></li>
+                            <li><a href="<?php echo get_post_type_archive_link('voyage') ?>">Voyages</a></li>
                             <li><a href="<?php echo get_post_type_archive_link('hotel') ?>">Hotels</a></li>
                             <li><a href="<?php echo site_url('blog') ?>">Blog</a></li>
                         </ul>

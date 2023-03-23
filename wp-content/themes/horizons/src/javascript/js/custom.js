@@ -215,6 +215,7 @@ $(function () {
         }
     });
 
+
     // Destination 1 owlCarousel *
     $('.destination1 .owl-carousel').owlCarousel({
         loop: true,
@@ -515,7 +516,8 @@ $(document).ready(function () {
             1000: {
                 dots: true
             }
-        }
+        },
+        preventScrollOnTouch: 'auto'
     });
     owl.on('changed.owl.carousel', function (event) {
         var item = event.item.index - 2; // Position of the current item
