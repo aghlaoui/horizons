@@ -6,10 +6,12 @@
             the_row();
         ?>
             <div class="text-center item" data-overlay-dark="5">
-                <img class="item bg-img" srcset="<?php echo get_sub_field('image')['sizes']['PageBanner700w'] ?> 768w,
-                <?php echo get_sub_field('image')['sizes']['PageBanner991w'] ?> 991w" sizes="(max-width: 767px) 767px,
-            (max-width: 991px) 991px,
-            991px" alt="">
+                <picture>
+                    <source media="(min-width: 991px)" srcset="<?php echo get_sub_field('image')['sizes']['PageBanner'] ?>" alt="">
+                    <source media="(min-width: 768px)" srcset="<?php echo get_sub_field('image')['sizes']['PageBanner991w'] ?>" alt="">
+                    <source media="(min-width: 576px)" srcset="<?php echo get_sub_field('image')['sizes']['PageBanner700w'] ?>" alt="">
+                    <img class="item bg-img" src="<?php echo get_sub_field('image')['sizes']['PageBanner576w'] ?>" alt="">
+                </picture>
                 <div class="v-middle caption">
                     <div class="container">
                         <div class="row">

@@ -27,6 +27,7 @@ function horizons_features()
     add_image_size('PageBanner', 1650, 750, true);
     add_image_size('PageBanner700w', 768, 750, true);
     add_image_size('PageBanner991w', 991, 750, true);
+    add_image_size('PageBanner576w', 576, 750, true);
 
 
     add_image_size('PostImage', 730, 510, true);

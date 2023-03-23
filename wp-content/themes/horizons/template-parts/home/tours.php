@@ -58,8 +58,10 @@ if (get_field('tours_activate')) {
                                     <div class="col col-md-12">
                                         <ul>
                                             <?php
-                                            $startDate = new DateTime(get_field('departure_time'));
-                                            $returnDate = new DateTime(get_field('return_time'));
+                                            $startDateField = get_field('departure_time');
+                                            $returnDateField = get_field('return_time');
+                                            $startDate = new DateTime($startDateField);
+                                            $returnDate = new DateTime($returnDateField);
                                             $difference = $startDate->diff($returnDate);
                                             $days = $difference->format('%a');
                                             ?>
