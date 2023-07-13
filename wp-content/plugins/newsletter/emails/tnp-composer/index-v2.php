@@ -191,7 +191,7 @@ $rev_dir = is_rtl() ? 'ltr' : 'rlt';
 </div>
 
 <script type="text/javascript">
-    TNP_PLUGIN_URL = "<?php echo esc_js(Newsletter::instance()->plugin_url) ?>";
+    TNP_PLUGIN_URL = "<?php echo esc_js(Newsletter::plugin_url()) ?>";
     TNP_HOME_URL = "<?php echo esc_js(home_url('/', is_ssl() ? 'https' : 'http')) ?>";
     tnp_context_type = "<?php echo esc_js($context_type) ?>";
     tnp_nonce = '<?php echo esc_js(wp_create_nonce('save')) ?>';

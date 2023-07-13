@@ -75,7 +75,7 @@ function custom_comment_form_defaults($defaults)
 {
     $defaults['title_reply'] = 'Laisser un commentaire';
     $defaults['comment_notes_before'] = 'tee';
-    $defaults['comment_notes_after'] = '';
+    $defaults['comment_notes_after'] = 'tee';
     $defaults['label_submit'] = 'Envoyer un message';
     return $defaults;
 }

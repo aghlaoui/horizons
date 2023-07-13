@@ -29,7 +29,7 @@ class NewsletterWidgetMinimal extends WP_Widget {
             echo $before_title . $title . $after_title;
         }
 
-        $options_profile = NewsletterSubscription::instance()->get_options('profile', $current_language);
+        $options_profile = Newsletter::instance()->get_options('form');
 
         if (empty($instance['button'])) {
             $instance['button'] = $options_profile['subscribe'];

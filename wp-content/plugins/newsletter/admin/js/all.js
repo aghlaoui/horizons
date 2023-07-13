@@ -467,6 +467,28 @@ jQuery.cookie = function (name, value, options) {
     }
 };
 
+jQuery(function ($) {
+    $('.tnpc-default-text').click(function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+    });
+    tnp_refresh_binds();
+});
+
+function tnp_refresh_binds() {
+    jQuery('[data-bind]').each(function () {
+        var id = this.dataset.bind;
+        var v;
+        if (id.substring(0, 1) === '!') {
+            v = !document.getElementById(id.substring(1)).checked;
+        } else {
+            v = document.getElementById(this.dataset.bind).checked;
+        }
+        jQuery(this).toggle(v);
+    });
+}
+
 function tnp_toggle_schedule() {
     jQuery("#tnp-schedule-button").toggle();
     jQuery("#tnp-schedule").toggle();

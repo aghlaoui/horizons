@@ -1,31 +1,21 @@
 <?php
+/* @var $this NewsletterSubscriptionAdmin */
+/* @var $controls NewsletterControls */
+
 defined('ABSPATH') || exit;
 
-@include_once NEWSLETTER_INCLUDES_DIR . '/controls.php';
-$controls = new NewsletterControls();
-$module = NewsletterSubscription::instance();
-
-$current_language = $module->get_current_language();
-
-$is_all_languages = $module->is_all_languages();
-
-if (!$is_all_languages) {
-    $controls->warnings[] = 'You are configuring the language <strong>' . $current_language . '</strong>.';
-}
-
 if (!$controls->is_action()) {
-    $controls->data = $module->get_options('template', $current_language);
+    $controls->data = $this->get_options('template', $language);
 } else {
     if ($controls->is_action('save')) {
-        $module->save_options($controls->data, 'template', null, $current_language);
-
+        $this->save_options($controls->data, 'template', $language);
         $controls->add_message_saved();
     }
 
     if ($controls->is_action('reset')) {
         // TODO: Reset by language?
-        $module->reset_options('template');
-        $controls->data = $module->get_options('template', $current_language);
+        $this->reset_options('template');
+        $controls->data = $this->get_options('template', $language);
         $controls->add_message_done();
     }
 
@@ -80,7 +70,7 @@ if (strpos($controls->data['template'], '{message}') === false) {
 
 <div class="wrap" id="tnp-wrap">
 
-    <?php include NEWSLETTER_DIR . '/tnp-header.php'; ?>
+    <?php include NEWSLETTER_ADMIN_HEADER ?>
 
     <div id="tnp-heading">
 
@@ -93,6 +83,8 @@ if (strpos($controls->data['template'], '{message}') === false) {
     </div>
 
     <div id="tnp-body">
+        
+         <?php $controls->show(); ?>
 
         <form method="post" action="">
             <?php $controls->init(); ?>
@@ -109,6 +101,6 @@ if (strpos($controls->data['template'], '{message}') === false) {
         </form>
     </div>
 
-    <?php include NEWSLETTER_DIR . '/tnp-footer.php'; ?>
+    <?php include NEWSLETTER_ADMIN_FOOTER ?>
 
 </div>

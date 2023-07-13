@@ -1,28 +1,16 @@
 <?php
-/* @var $this Newsletter */
+/* @var $this NewsletterMainAdmin */
+/* @var $controls NewsletterControls */
+
 defined('ABSPATH') || exit;
 
-include_once NEWSLETTER_INCLUDES_DIR . '/controls.php';
-$controls = new NewsletterControls();
-
 if (!$controls->is_action()) {
-    $controls->data = get_option('newsletter_main');
-    if (!isset($controls->data['roles'])) {
-        $controls->data['roles'] = array();
-        if (!empty($controls->data['editor']))
-            $controls->data['roles'] = 'editor';
-    }
+    $controls->data = $this->get_options();
 } else {
 
     if ($controls->is_action('save')) {
         $errors = null;
 
-        if (!isset($controls->data['roles'])) {
-            $controls->data['roles'] = [];
-        }
-
-        // Validation
-        $controls->data['sender_email'] = $this->normalize_email($controls->data['sender_email']);
         if (!$this->is_email($controls->data['sender_email'])) {
             $controls->errors .= __('The sender email address is not correct.', 'newsletter') . '<br>';
         } else {
@@ -40,7 +28,6 @@ if (!$controls->is_action()) {
             $controls->data['scheduler_max'] = 12;
         }
 
-
         if (!$this->is_email($controls->data['reply_to'], true)) {
             $controls->errors .= __('Reply to email is not correct.', 'newsletter') . '<br>';
         } else {
@@ -52,7 +39,7 @@ if (!$controls->is_action()) {
         }
 
         if (empty($controls->errors)) {
-            $this->merge_options($controls->data);
+            $this->save_options($controls->data);
             $controls->add_message_saved();
             $this->logger->debug('Main options saved');
         }
@@ -66,23 +53,23 @@ if (!$controls->is_action()) {
     }
 
     if ($controls->is_action('create')) {
-        $page = array();
+        $page = [];
         $page['post_title'] = 'Newsletter';
         $page['post_content'] = '[newsletter]';
         $page['post_status'] = 'publish';
         $page['post_type'] = 'page';
         $page['comment_status'] = 'closed';
         $page['ping_status'] = 'closed';
-        $page['post_category'] = array(1);
+        $page['post_category'] = [1];
 
         $current_language = $this->get_current_language();
         $this->switch_language('');
         // Insert the post into the database
         $page_id = wp_insert_post($page);
-        $this->switch_language($current_language);
+        $this->switch_language($language);
 
         $controls->data['page'] = $page_id;
-        $this->merge_options($controls->data);
+        $this->save_options($controls->data);
 
         $controls->messages = 'A new page has been created';
     }
@@ -104,12 +91,12 @@ if (is_wp_error($license_data)) {
     }
 }
 
-$return_path = $this->options['return_path'];
+$return_path = $controls->data['return_path'];
 
 if (!empty($return_path)) {
     list($return_path_local, $return_path_domain) = explode('@', $return_path);
 
-    $sender = $this->options['sender_email'];
+    $sender = $this->get_option('sender_email');
     list($sender_local, $sender_domain) = explode('@', $sender);
 
     if ($sender_domain != $return_path_domain) {
@@ -137,17 +124,18 @@ if (!empty($return_path)) {
 
 <div class="wrap" id="tnp-wrap">
 
-    <?php include NEWSLETTER_DIR . '/tnp-header.php'; ?>
+    <?php include NEWSLETTER_DIR . '/header.php'; ?>
 
     <div id="tnp-heading">
         <?php $controls->title_help('https://www.thenewsletterplugin.com/plugins/newsletter/newsletter-configuration') ?>
 
-        <h2><?php _e('General Settings', 'newsletter') ?></h2>
+        <h2><?php _e('Settings', 'newsletter') ?></h2>
+        <?php include __DIR__ . '/nav.php'?>
 
     </div>
     <div id="tnp-body" class="tnp-main-main">
 
-
+        <?php $controls->show() ?>
         <form method="post" action="">
             <?php $controls->init(); ?>
 
@@ -191,17 +179,25 @@ if (!empty($return_path)) {
                                 <?php $controls->field_help('https://www.thenewsletterplugin.com/documentation/installation/newsletter-configuration/#dedicated-page') ?>
                             </th>
                             <td>
-                                <?php $controls->page('page', __('Unstyled page', 'newsletter'), '', true); ?>
-                                <?php
-                                if (empty($controls->data['page'])) {
-                                    $controls->button('create', __('Create the page', 'newsletter'));
-                                }
-                                ?>
-                                <?php if ($this->is_multilanguage()) { ?>
-                                    <p class="description">
-                                        With multilanguage plugins be sure the selected page is translated in every language (usually only the title needs to be translated, the content
-                                        should just be the <code>[newsletter]</code> shortcode).
-                                    </p>
+                                <?php if (!$language) { ?>
+                                    <?php $controls->page('page', __('Unstyled page', 'newsletter'), '', true); ?>
+
+                                    <?php
+                                    if (empty($controls->data['page'])) {
+                                        $controls->button('create', __('Create the page', 'newsletter'));
+                                    }
+                                    ?>
+
+                                    <?php if ($is_multilanguage) { ?>
+                                        <p class="description">
+                                            With multilanguage plugins be sure the selected page is translated in every language (usually only the title needs to be translated, the content
+                                            should just be the <code>[newsletter]</code> shortcode).
+                                        </p>
+                                    <?php } ?> 
+                                        
+                                <?php } else { ?>
+                                    <?php $controls->hidden('page'); ?>
+                                    Switch to "all languages" to set this option.
                                 <?php } ?> 
                             </td>
                         </tr>

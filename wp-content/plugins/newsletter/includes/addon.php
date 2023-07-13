@@ -11,6 +11,7 @@ class NewsletterAddon {
     var $options;
     var $version;
     var $labels;
+    var $menu_priority = 100;
 
     public function __construct($name, $version = '0.0.0') {
         $this->name = $name;
@@ -41,15 +42,36 @@ class NewsletterAddon {
      * fires the <code>newsletter_init</code> event.
      */
     function init() {
+        if (is_admin()) {
+            if ($this->is_allowed()) {
+                add_action('admin_menu', [$this, 'admin_menu'], $this->menu_priority);
+                if (method_exists($this, 'settings_menu')) {
+                    add_filter('newsletter_menu_settings', [$this, 'settings_menu']);
+                }
+                if (method_exists($this, 'subscribers_menu')) {
+                    add_filter('newsletter_menu_subscribers', [$this, 'subscribers_menu']);
+                }
+            }
+        }
         
     }
+    
+    function admin_menu() {
+        
+    }
+    
+//    function settings_menu($entries) {
+//    }
+    
+//    function subscribers_menu($entries) {
+//    }
 
     function get_current_language() {
         return Newsletter::instance()->get_current_language();
     }
 
     function is_all_languages() {
-        return Newsletter::instance()->is_all_languages();
+        return empty(NewsletterAdmin::instance()->language());
     }
 
     function is_allowed() {
@@ -174,7 +196,14 @@ class NewsletterAddon {
         }
         return $r;
     }
+    
+    function show_email_status_label($email) {
+        return NewsletterAdmin::instance()->show_email_status_label($email);
+    }
 
+    function send_test_email($email, $controls) {
+        NewsletterEmailsAdmin::instance()->send_test_email($email, $controls);
+    }
 }
 
 /**
@@ -266,7 +295,7 @@ class NewsletterMailerAddon extends NewsletterAddon {
         $message->to_name = '';
         if (empty($type) || $type == 'html') {
             $message->body = file_get_contents(NEWSLETTER_DIR . '/includes/test-message.html');
-            $message->body = str_replace('{plugin_url}', Newsletter::instance()->plugin_url, $message->body);
+            $message->body = str_replace('{plugin_url}', Newsletter::plugin_url(), $message->body);
         }
 
         if (empty($type) || $type == 'text') {

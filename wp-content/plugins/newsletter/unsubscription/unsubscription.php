@@ -11,30 +11,19 @@ class NewsletterUnsubscription extends NewsletterModule {
      */
     static function instance() {
         if (self::$instance == null) {
-            self::$instance = new NewsletterUnsubscription();
+            self::$instance = new self();
         }
         return self::$instance;
     }
 
     function __construct() {
-        parent::__construct('unsubscription', '1.0.4');
+        parent::__construct('unsubscription');
 
-        add_filter('newsletter_replace', array($this, 'hook_newsletter_replace'), 10, 4);
-        add_filter('newsletter_page_text', array($this, 'hook_newsletter_page_text'), 10, 3);
-        add_filter('newsletter_message_headers', array($this, 'hook_add_unsubscribe_headers_to_email'), 10, 3);
+        add_filter('newsletter_replace', [$this, 'hook_newsletter_replace'], 10, 4);
+        add_filter('newsletter_page_text', [$this, 'hook_newsletter_page_text'], 10, 3);
+        add_filter('newsletter_message_headers', [$this, 'hook_add_unsubscribe_headers_to_email'], 10, 3);
 
-        add_action('newsletter_action', array($this, 'hook_newsletter_action'), 11, 3);
-    }
-
-    function upgrade() {
-        parent::upgrade();
-
-        if (!empty($this->options['notify_admin_on_unsubscription'])) {
-            unset($this->options['notify_admin_on_unsubscription']);
-            $this->options['notify'] = '1';
-            $this->options['notify_email'] = get_option('admin_email');
-            $this->save_options($this->options);
-        }
+        add_action('newsletter_action', [$this, 'hook_newsletter_action'], 11, 3);
     }
 
     function hook_newsletter_action($action, $user, $email) {
@@ -92,7 +81,7 @@ class NewsletterUnsubscription extends NewsletterModule {
     function unsubscribe($user, $email = null) {
         global $wpdb;
 
-        if ($user->status == TNP_User::STATUS_UNSUBSCRIBED) {
+        if ($user->status === TNP_User::STATUS_UNSUBSCRIBED) {
             return $user;
         }
 
@@ -115,25 +104,24 @@ class NewsletterUnsubscription extends NewsletterModule {
     }
 
     function send_unsubscribed_email($user, $force = false) {
-        $options = $this->get_options('', $this->get_user_language($user));
-        if (!$force && !empty($options['unsubscribed_disabled'])) {
+        if (!$force && !empty($this->get_option('unsubscribed_disabled'))) {
             return true;
         }
 
-        $message = do_shortcode($options['unsubscribed_message']);
-        $subject = $options['unsubscribed_subject'];
+        $message = do_shortcode($this->get_text('unsubscribed_message'));
+        $subject = $this->get_text('unsubscribed_subject');
 
         return NewsletterSubscription::instance()->mail($user, $subject, $message);
     }
 
     function notify_admin($user) {
 
-        if (empty($this->options['notify'])) {
+        if (empty($this->get_option('notify'))) {
             return;
         }
 
         $message = $this->generate_admin_notification_message($user);
-        $email = trim($this->options['notify_email']);
+        $email = trim($this->get_option('notify_email'));
         $subject = $this->generate_admin_notification_subject('New cancellation');
 
         Newsletter::instance()->mail($email, $subject, ['html' => $message]);
@@ -169,38 +157,41 @@ class NewsletterUnsubscription extends NewsletterModule {
         return $text;
     }
 
+    /**
+     * Language and locale are already defined in this hook.
+     * 
+     * @param type $text
+     * @param type $key
+     * @param type $user
+     * @return type
+     */
     function hook_newsletter_page_text($text, $key, $user = null) {
 
-        $options = $this->get_options('', $this->get_current_language($user));
+        // For tests
+        if ($key === 'unsubscription_error') {
+            return $this->get_text('error_text');
+        }
+
         if ($key == 'unsubscribe') {
             if (!$user) {
-                return 'Subscriber not found.';
+                return $this->get_text('error_text');
             }
-            return $options['unsubscribe_text'];
+            return $this->get_text('unsubscribe_text');
         }
         if ($key == 'unsubscribed') {
             if (!$user) {
-                return $options['error_text'];
+                return $this->get_text('error_text');
             }
-            return $options['unsubscribed_text'];
+            return $this->get_text('unsubscribed_text');
         }
         if ($key == 'reactivated') {
             if (!$user) {
-                return $options['error_text'];
+                return $this->get_text('error_text');
             }
-            return $options['reactivated_text'];
+            return $this->get_text('reactivated_text');
         }
-        if ($key == 'unsubscription_error') {
-            return $options['error_text'];
-        }
-        return $text;
-    }
 
-    function admin_menu() {
-        $this->add_admin_page('index', 'Unsubscribe');
-        if (!$this->is_multilanguage()) {
-            $this->add_admin_page('indexnew', 'Unsubscribe');
-        }
+        return $text;
     }
 
     /**
@@ -212,13 +203,13 @@ class NewsletterUnsubscription extends NewsletterModule {
      */
     function hook_add_unsubscribe_headers_to_email($headers, $email, $user) {
 
-        if (!empty($this->options['disable_unsubscribe_headers'])) {
+        if (!empty($this->get_option('disable_unsubscribe_headers'))) {
             return $headers;
         }
 
         $list_unsubscribe_values = [];
-        if (!empty($this->options['list_unsubscribe_mailto_header'])) {
-            $unsubscribe_address = $this->options['list_unsubscribe_mailto_header'];
+        if (!empty($this->get_option('list_unsubscribe_mailto_header'))) {
+            $unsubscribe_address = $this->get_option('list_unsubscribe_mailto_header');
             $list_unsubscribe_values[] = "<mailto:$unsubscribe_address?subject=unsubscribe>";
         }
 

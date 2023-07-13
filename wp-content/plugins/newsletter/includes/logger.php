@@ -104,6 +104,7 @@ class NewsletterLogger {
     }
 
     function debug($text) {
+        if (!$this->is_debug) return;
         $this->log($text, self::DEBUG);
     }
 

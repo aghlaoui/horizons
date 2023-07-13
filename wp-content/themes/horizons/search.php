@@ -18,145 +18,21 @@ $date = isset($_GET['dur']) ? trim($_GET['dur']) : '';
 
 $the_date = strtotime($date);
 $new_date = date('Ymd', $the_date);
-switch ($cherche) {
-    case 'both':
-        $post_type = array('voyage', 'hotel');
-        if (!empty($destination)) {
-            if (!empty($date)) {
-                $query = new WP_Query(array(
-                    'post_type' => $post_type,
-                    'posts_per_page' => -1,
-                    'meta_query' => array(
-                        array(
-                            'key' => 'departure_time',
-                            'compare' => '>=',
-                            'value' => $new_date,
-                            'type' => 'NUMERIC'
-                        )
-                    ),
-                    'tax_query' => array(
-                        array(
-                            'taxonomy' => 'cities',
-                            'terms' => $destination,
-                            'field' => 'name'
-                        )
-                    )
-                ));
-            } else {
-                $query = new WP_Query(array(
-                    'post_type' => $post_type,
-                    'posts_per_page' => -1,
-                    'tax_query' => array(
-                        array(
-                            'taxonomy' => 'cities',
-                            'terms' => $destination,
-                            'field' => 'name'
-                        )
-                    )
-                ));
-            }
-        } else {
-            if (!empty($date)) {
-                $query = new WP_Query(array(
-                    'post_type' => $post_type,
-                    'posts_per_page' => -1,
-                    'meta_query' => array(
-                        array(
-                            'key' => 'departure_time',
-                            'compare' => '>=',
-                            'value' => $new_date,
-                            'type' => 'NUMERIC'
-                        )
-                    )
-                ));
-            } else {
-                $query = new WP_Query(array(
-                    'post_type' => $post_type,
-                    'posts_per_page' => -1,
-                ));
-            }
-        }
-        break;
-    case 'voyage':
-        $post_type = 'voyage';
-        if (!empty($destination)) {
-            if (!empty($date)) {
-                $query = new WP_Query(array(
-                    'post_type' => $post_type,
-                    'posts_per_page' => -1,
-                    'meta_query' => array(
-                        array(
-                            'key' => 'departure_time',
-                            'compare' => '>=',
-                            'value' => $new_date,
-                            'type' => 'NUMERIC'
-                        )
-                    ),
-                    'tax_query' => array(
-                        array(
-                            'taxonomy' => 'cities',
-                            'terms' => $destination,
-                            'field' => 'name'
-                        )
-                    )
-                ));
-            } else {
-                $query = new WP_Query(array(
-                    'post_type' => $post_type,
-                    'posts_per_page' => -1,
-                    'tax_query' => array(
-                        array(
-                            'taxonomy' => 'cities',
-                            'terms' => $destination,
-                            'field' => 'name'
-                        )
-                    )
-                ));
-            }
-        } else {
-            if (!empty($date)) {
-                $query = new WP_Query(array(
-                    'post_type' => $post_type,
-                    'posts_per_page' => -1,
-                    'meta_query' => array(
-                        array(
-                            'key' => 'departure_time',
-                            'compare' => '>=',
-                            'value' => $new_date,
-                            'type' => 'NUMERIC'
-                        )
-                    )
-                ));
-            } else {
-                $query = new WP_Query(array(
-                    'post_type' => $post_type,
-                    'posts_per_page' => -1,
-                ));
-            }
-        }
-        break;
-    case 'hotel':
-        $post_type = 'hotel';
-        if (!empty($destination)) {
-            $query = new WP_Query(array(
-                'post_type' => $post_type,
-                'posts_per_page' => -1,
-                'tax_query' => array(
-                    array(
-                        'taxonomy' => 'cities',
-                        'terms' => $destination,
-                        'field' => 'name'
-                    )
-                )
-            ));
-        } else {
-            $query = new WP_Query(array(
-                'post_type' => $post_type,
-                'posts_per_page' => -1,
-            ));
-        }
-        break;
-}
+
+$searchType = ($cherche != 'both') ? $cherche : array('voyage', 'hotel');
+$destinationSearch = (!empty($destination)) ? array(array('taxonomy' => 'cities', 'terms' => $destination, 'field' => 'name')) : '';
+$dateSearch = (!empty($new_date)) ? array(array('key' => 'departure_time', 'compare' => '>=', 'value' => $new_date, 'type' => 'NUMERIC')) : '';
+
+
+$query = new WP_Query(
+    array(
+        'post_type' => $searchType,
+        'posts_per_page' => -1,
+        'meta_query' => $dateSearch,
+        'tax_query' => $destinationSearch,
+    )
+);
+
 ?>
 <section class="destination1 section-padding bg-lightnav">
     <div class="container">

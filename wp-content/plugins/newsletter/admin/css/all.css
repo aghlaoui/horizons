@@ -1,12 +1,17 @@
 #tnp-wrap .tnp-news {
     background-color: var(--tnp-blue-darker);
-    border: 1px solid #ddd;
+    /*border: 1px solid #ddd;*/
     padding: 1rem;
     display: flex;
-    justify-content: space-between;
+    /*justify-content: space-between;*/
     position: relative;
-    max-width: 750px;
+    /*max-width: 100%;*/
     align-items: center;
+    margin-top: 0;
+    margin-bottom: 0;
+    margin-left: -20px;
+    margin-right: -20px;
+    box-sizing: border-box;
 }
 #tnp-wrap .tnp-news-message {
     font-size: 1.1rem;
@@ -16,6 +21,7 @@
 #tnp-wrap .tnp-news-cta {
     text-align: right;
     padding-right: 2rem;
+    margin-left: 30px;
 }
 #tnp-wrap .tnp-news-link {
     display: inline-block;
@@ -26,10 +32,11 @@
     font-size: 1rem;
     border-radius: 3px;
     line-height: normal;
+    
 }
 #tnp-wrap .tnp-news-dismiss {
     position: absolute;
-    top: .2rem;
+    top: .3rem;
     right: .3rem;
     font-size: 2rem;
     text-decoration: none;
@@ -48,11 +55,13 @@
     --tnp-red-dark: #ee511e;
     --tnp-red-darker: #b2360e;
 
-    --tnp-orange-lighter: hsl(22, 88%, 90%);
+    --tnp-orange-lighter: hsl(22, 88%, 95%);
     --tnp-orange-light: hsl(22, 88%, 75%);
     --tnp-orange: hsl(22, 88%, 58%);
     --tnp-orange-dark: hsl(22, 88%, 38%);
     --tnp-orange-darker: hsl(22, 88%, 18%);
+    
+    --tnp-yellow-lighter: hsl(60, 100%, 95%);
 
     /*--tnp-blue-lighter: #b3d9f2;*/
     --tnp-blue-lighter: #f4fafd;
@@ -69,7 +78,8 @@
 
 
     --tnp-text: #555;
-    --tnp-title: #333;
+    /*--tnp-title: #333;*/
+    --tnp-title: #1d6da2;
 
     --tnp-font-family: Inter, sans-serif;
 
@@ -311,7 +321,9 @@
     background-color: #f4faff;
 }
 
-
+#tnp-body .widefat td a {
+    color: var(--tnp-text);
+}
 
 table.clicks td {
     border: 1px solid #666;
@@ -879,11 +891,6 @@ iframe.tnp-editor-preview-desktop {
     min-height: 500px;
 }
 
-.tnp-control-all-languages-notice {
-    padding: 15px;
-    border: 1px dashed #999;
-}
-
 /* Spectru, color picker */
 
 /* Down arrow */
@@ -991,6 +998,11 @@ span.tnp-user-status {
     color: var(--tnp-led-gray);
 }
 
+/* DEBUG */
+.tnp-debug::before {
+    content: "🐞";
+}
+
 .container {
     width: 100%;
     padding-right: 1rem;
@@ -1084,7 +1096,7 @@ span.tnp-user-status {
     margin-right: -20px;
     margin-left: -20px;
     border-bottom: 1px solid #ddd;
-    margin-bottom: 10px;
+    margin-bottom: 0px;
 }
 
 #tnp-menu a {
@@ -1264,20 +1276,29 @@ span.tnp-user-status {
     The head section of each administration page with title and introduction
 */
 #tnp-heading {
-    padding: 10px 0px;
-    margin-bottom: 10px;
+    padding: 1rem 0px;
+    margin-bottom: 1.2rem;
+    margin-left: -20px;
+    margin-right: -20px;
+    padding-left: 20px;
+    padding-right: 20px;
+    border-bottom: 1px solid #d6d6d6;
+    padding-bottom: .6rem;
+    background-color: #f8f8f8;
+    
 }
 
 /* Title */
 #tnp-heading h2 {
     color: var(--tnp-title);
-    font-size: 1.5rem;
+    font-size: 1.2rem;
     line-height: normal;
     vertical-align: middle;
     font-weight: bold;
     padding: 0;
     margin: 0px;
-    margin-bottom: 1rem;
+    margin-bottom: .5rem;
+    text-transform: uppercase;
 }
 
 #tnp-heading .tnp-title-help {
@@ -1346,7 +1367,77 @@ span.tnp-user-status {
     padding: 2px;
 }
 
-#tnp-footer {
+
+/* For pages that need a sub menu */
+#tnp-heading .tnp-nav {
+    /*background-color: var(--tnp-gray);*/
+    padding: 5px 0;
+    width: fit-content;
+    font-size: 0; /* To rmeove the element spacing */
+    line-height: normal;
+    margin: 0;
+    border-radius: 5px;
+    /*overflow: hidden;*/
+}
+
+#tnp-heading .tnp-nav li {
+    font-size: 1rem;
+    display: inline-block;
+    margin: 0;
+    /*background-color: var(--tnp-gray);*/
+    /*padding: .5rem 1rem;*/
+    font-weight: bold !important;
+    margin-right: 1.5rem;
+}
+
+#tnp-heading .tnp-nav li a ,
+#tnp-heading .tnp-nav li a:focus,
+#tnp-heading .tnp-nav li a:visited,
+#tnp-heading .tnp-nav li a:active {
+    font-size: 1rem;
+    color: var(--tnp-text) !important;
+    /*color: #ddd !important;*/
+    /*display: inline-block;*/
+    /*padding: .5rem 1rem;*/
+    text-decoration: none;
+    font-weight: normal !important;
+    line-height: normal;
+    /*border-left: 1px solid #999;*/
+    outline: 0;
+    box-shadow: none;
+}
+
+#tnp-heading .tnp-nav li.active {
+    /*background-color: #fff !important;*/
+    /*border-left: 1px solid transparent;*/
+}
+
+#tnp-heading .tnp-nav li.active a {
+    /*color: var(--tnp-text) !important;*/
+    color: #000 !important;
+    font-weight: bold !important;
+}
+
+#tnp-heading .tnp-nav-title {
+    background-color: var(--tnp-orange) !important;
+    text-transform: uppercase;
+    font-size: .9rem;
+    font-weight: normal !important;
+    color: #fff !important;
+}
+
+#tnp-heading .tnp-nav span.tnp-pro-badge {
+    background-color: #000;
+    color: #fff;
+    display: inline-block;
+    padding: 2px 5px;
+    font-weight: normal;
+    line-height: normal;
+    font-size: 11px;
+    border-radius: 5px;
+    position: relative;
+    top: -5px;
+}#tnp-footer {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
@@ -1579,6 +1670,7 @@ span.tnp-user-status {
     border: 0;
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
+    width: fit-content;
 }
 
 #tnp-body .ui-tabs .ui-tabs-nav .ui-tabs-tab {
@@ -1712,8 +1804,8 @@ span.tnp-user-status {
 }
 
 /* WP has different padding for TH and TD (why???) */
-#tnp-body .form-table th, 
-#tnp-body .form-table td { 
+#tnp-body .form-table th,
+#tnp-body .form-table td {
     padding: 1rem;
 }
 
@@ -1735,6 +1827,25 @@ span.tnp-user-status {
 #tnp-body .form-table td {
     width: auto;
     vertical-align: top;
+}
+
+/* Default text container for customizable texts */
+#tnp-body .form-table .tnpc-default-text {
+    border:1px dashed var(--tnp-gray-light);
+    background-color: var(--tnp-gray-lighter);
+    padding: 1rem;
+    margin-top: .5rem;
+    border-radius: 0px;
+    width: 700px;
+    max-width: 100%;
+}
+
+#tnp-body .form-table .tnpc-default-text p {
+    margin-top: 0;
+}
+
+#tnp-body .form-table .tnpc-default-text a {
+    color: var(--tnp-blue);
 }
 
 #tnp-body .form-table td .tnpc-grid th {
@@ -1780,6 +1891,16 @@ span.tnp-user-status {
 #tnp-body .form-table select
 {
     border: var(--tnp-input-border);
+}
+
+#tnp-body .form-table input::placeholder,
+#tnp-body .widefat input::placeholder,
+#tnp-body .form-table textarea::placeholder,
+#tnp-body .widefat textarea::placeholder
+
+{
+    font-style: italic;
+    color: var(--tnp-gray-light);
 }
 
 #tnp-body .form-table textarea {
@@ -1844,13 +1965,13 @@ span.tnp-user-status {
 }
 
 #tnp-body .tnpc-media-remove {
-    position: absolute; 
-    top: 0px; 
-    right: 5px; 
-    background-color: transparent; 
-    color: var(--tnp-text) !important;  
-    font-size: 24px; 
-    display: block; 
+    position: absolute;
+    top: 0px;
+    right: 5px;
+    background-color: transparent;
+    color: var(--tnp-text) !important;
+    font-size: 24px;
+    display: block;
     text-decoration: none;
     border: 0;
     line-height: normal !important;
@@ -1876,14 +1997,17 @@ span.tnp-user-status {
 }
 
 .tnpc-lists label span {
-    border-radius: 3px;
-    color: #fff;
-    background-color: #aaa;
+    border-radius: 50%;
+    color: var(--tnp-text);
+    background-color: #eee;
     display: inline-block;
     padding: 1px 5px;
-    min-width: 2em;
+    min-width: 1.5em;
     font-size: .9em;
     text-align: center;
+    padding: 1px 3px;
+    line-height: normal;
+
 }
 
 
@@ -1891,7 +2015,7 @@ span.tnp-user-status {
 .tnpc-hint, p.description {
     margin-top: 15px;
     clear: both;
-    font-size: 12px !important;
+    font-size: .9rem !important;
     color: #666;
     font-style: italic;
 }
@@ -1914,10 +2038,34 @@ span.tnp-user-status {
 .tnpc_lists_notes {
     color: #999;
     font-size: .9em;
-    padding: 0px 0 0 15px; 
+    padding: 0px 0 0 15px;
     border-left: 3px solid #888;
     margin-top: 10px;
-}html {
+}
+
+/* Row of fields */
+.form-table .tnpc-fields-row {
+    display: flex;
+    vertical-align: top;
+}
+
+.form-table .tnpc-field {
+    margin-right: 1rem;
+}
+
+.form-table .tnpc-field label {
+    text-transform: uppercase;
+    font-size: .7rem;
+    display: block;
+}
+
+#tnp-body .tnpc-language-notice {
+    padding: 15px;
+    border: 1px dashed #999;
+    background-color: var(--tnp-blue-lighter);
+}
+
+html {
     --tnpf-col-padding: 0 10px;
 }
 
@@ -2304,6 +2452,7 @@ class "tnp-widget"
     color: #000 !important;
 }
 
+/*
 .tnp-cards-container {
     display: flex;
     flex-wrap: wrap;
@@ -2489,6 +2638,8 @@ class "tnp-widget"
 .tnp-card-table table tbody tr:nth-child(even) {
     background-color: #26303E;
 }
+
+*/
 
 .mt-25 {
     margin-top: 25px;

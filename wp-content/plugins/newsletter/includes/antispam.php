@@ -14,7 +14,7 @@ class NewsletterAntispam {
     }
 
     public function __construct() {
-        $this->options = NewsletterSubscription::instance()->get_options('antibot');
+        $this->options = Newsletter::instance()->get_options('antispam');
         $this->logger = new NewsletterLogger('antispam');
     }
 
@@ -107,8 +107,6 @@ class NewsletterAntispam {
     }
 
     function is_missing_domain_mx($email) {
-        // Actually not fully implemented
-        return false;
 
         if (empty($this->options['domain_check'])) {
             return false;
@@ -185,8 +183,9 @@ class NewsletterAntispam {
     }
 
     function ip_match($ip, $range) {
-        if (empty($ip))
+        if (empty($ip)) {
             return false;
+        }
         if (strpos($range, '/')) {
             list ($subnet, $bits) = explode('/', $range);
             $ip = ip2long($ip);

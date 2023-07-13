@@ -476,7 +476,7 @@ class NewsletterControls {
     }
 
     function add_language_warning() {
-        $newsletter = Newsletter::instance();
+        $newsletter = NewsletterAdmin::instance();
         $current_language = $newsletter->get_current_language();
 
         if (!$current_language) {
@@ -485,9 +485,29 @@ class NewsletterControls {
         $this->warnings[] = 'You are configuring the language <strong>' . $newsletter->get_language_label($current_language) . '</strong>. Switch to "all languages" to see all options.';
     }
 
+    /**
+     * 
+     * @return string
+     * 
+     * @todo Internationalization
+     */
+    function language_notice() {
+        NewsletterAdmin::instance()->language_notice();
+    }
+
+    /**
+     * 
+     * @return string
+     * @deprecated
+     */
     function switch_to_all_languages_notice() {
-        echo '<div class="tnpc-languages-notice">';
-        _e('Switch the administration side to "all languages" to set these options', 'newsletter');
+        if (!NewsletterAdmin::instance()->language()) {
+            return;
+        }
+        echo '<div class="tnpc-language-notice">';
+
+        echo 'You are configuring the language <strong>' . NewsletterAdmin::instance()->get_language_label($current_language) . '</strong>. Switch to "all languages" to see all options.';
+
         echo '</div>';
     }
 
@@ -510,7 +530,7 @@ class NewsletterControls {
             'P' => TNP_User::get_status_label('P')
         ]);
     }
-    
+
     function gender($name) {
         $this->select($name, ['n' => __('Not specified', 'newsletter'), 'f' => __('Female', 'newsletter'), 'm' => __('Male', 'newsletter')]);
     }
@@ -530,6 +550,23 @@ class NewsletterControls {
         }
         echo '>', __('Yes', 'newsletter'), '</option>';
         echo '</select>&nbsp;&nbsp;&nbsp;';
+    }
+
+    function showhide($name) {
+        $value = isset($this->data[$name]) ? (int) $this->data[$name] : 0;
+
+        echo '<select style="width: auto" name="options[', esc_attr($name), ']">';
+        echo '<option value="0"';
+        if ($value == 0) {
+            echo ' selected';
+        }
+        echo '>', __('Hide', 'newsletter'), '</option>';
+        echo '<option value="1"';
+        if ($value == 1) {
+            echo ' selected';
+        }
+        echo '>', __('Show', 'newsletter'), '</option>';
+        echo '</select>';
     }
 
     function enabled($name = 'enabled', $attrs = []) {
@@ -727,6 +764,11 @@ class NewsletterControls {
             echo '>' . esc_html($label) . '</option>';
         }
         echo '</select>';
+    }
+
+    function optin($name = 'optin') {
+        $this->select('optin', ['' => __('Default', 'newsletter'), 'double' => __('Double', 'newsletter'), 'single' => __('Single', 'newsletter')]);
+        echo '<p>Default: ', NewsletterSubscription::instance()->is_double_optin() ? __('Double', 'newsletter') : __('Single', 'newsletter'), '</p>';
     }
 
     function select_images($name, $options, $first = null) {
@@ -1018,6 +1060,10 @@ class NewsletterControls {
         $this->btn('save', __('Save', 'newsletter'), ['icon' => 'fa-save']);
     }
 
+    function button_link_save($url) {
+        $this->btn_link($url, __('Save', 'newsletter'), ['icon' => 'fa-save']);
+    }
+
     function button_reset($action = 'reset') {
         $this->btn($action, __('Reset', 'newsletter'), ['icon' => 'fa-reply', 'confirm' => true, 'secondary' => true]);
     }
@@ -1129,7 +1175,7 @@ class NewsletterControls {
         echo '</textarea>';
     }
 
-    function wp_editor($name, $settings = []) {
+    function wp_editor($name, $settings = [], $attrs = []) {
         static $filter_added = false;
 
         if (!$filter_added) {
@@ -1144,6 +1190,9 @@ class NewsletterControls {
         $settings = array_merge(['media_buttons' => false], $settings);
 
         $value = $this->get_value($name);
+        if (empty($value) && isset($attrs['default'])) {
+            $value = $attrs['default'];
+        }
         wp_editor($value, $name, array_merge(
                         [
                             'tinymce' => [
@@ -1184,14 +1233,23 @@ class NewsletterControls {
         <?php
     }
 
-    function textarea($name, $width = '100%', $height = '50') {
+    function textarea($name, $attrs = '100%', $height = '50') {
         $value = $this->get_value($name);
         if (is_array($value)) {
             $value = implode("\n", $value);
         }
-        echo '<textarea id="options-' . esc_attr($name) . '" class="dynamic" name="options[' . esc_attr($name) . ']" wrap="off" style="width:' . esc_attr($width) . ';height:' . esc_attr($height) . '">';
-        echo esc_html($value);
-        echo '</textarea>';
+
+        if (is_string($attrs)) {
+            echo '<textarea id="options-' . esc_attr($name) . '" class="dynamic" name="options[' . esc_attr($name) . ']" wrap="off" style="width:' . esc_attr($attrs) . ';height:' . esc_attr($height) . '">';
+            echo esc_html($value);
+            echo '</textarea>';
+        } else {
+            $attrs = array_merge(['width' => '100%', 'height' => '200px', 'placeholder' => ''], $attrs);
+            echo '<textarea id="options-' . esc_attr($name) . '" name="options[' . esc_attr($name) . ']" wrap="off" placeholder="'
+            . esc_attr($attrs['placeholder']) . '" style="width:' . esc_attr($attrs['width']) . ';height:' . esc_attr($attrs['height']) . '">';
+            echo esc_html($value);
+            echo '</textarea>';
+        }
     }
 
     function textarea_fixed($name, $width = '100%', $height = '200') {
@@ -1267,13 +1325,20 @@ class NewsletterControls {
      * @param string $name
      * @param string $label
      */
-    function checkbox2($name, $label = '') {
+    function checkbox2($name, $label = '', $attrs = []) {
         if ($label != '') {
             echo '<label>';
         }
-        echo '<input type="checkbox" id="' . esc_attr($name) . '" onchange="document.getElementById(\'' . esc_attr($name) . '_hidden\').value=this.checked?\'1\':\'0\'"';
+        echo '<input type="checkbox" id="options-' . esc_attr($name) . '" onchange="document.getElementById(\'' . esc_attr($name) . '_hidden\').value=this.checked?\'1\':\'0\';';
+        if (!empty($attrs['onchange'])) {
+            echo $attrs['onchange'];
+        }
+        echo '"';
         if (!empty($this->data[$name])) {
             echo ' checked';
+        }
+        if (!empty($attrs['title'])) {
+            echo ' title="', esc_attr($attrs['title']), '"';
         }
         echo '>';
         if ($label != '') {
@@ -1322,6 +1387,7 @@ class NewsletterControls {
     }
 
     function checkboxes($name, $options) {
+        echo '<input type="hidden" name="tnp_fields[' . esc_attr($name) . ']" value="array">';
         echo '<div class="tnpc-checkboxes">';
         foreach ($options as $value => $label) {
             $this->checkbox_group($name, $value, $label);
@@ -1370,7 +1436,7 @@ class NewsletterControls {
      * Empty preferences are skipped.
      */
     function preferences($name = 'preferences') {
-        $lists = Newsletter::instance()->get_lists();
+        $lists = NewsletterAdmin::instance()->get_lists();
 
         echo '<div class="tnpc-checkboxes">';
         foreach ($lists as $list) {
@@ -1389,6 +1455,44 @@ class NewsletterControls {
         $this->preferences_group($name);
     }
 
+    function lists_public($name = 'lists') {
+        echo '<input type="hidden" name="tnp_fields[' . esc_attr($name) . ']" value="array">';
+        $lists = NewsletterAdmin::instance()->get_lists_public();
+
+        echo '<div class="tnpc-lists">';
+        foreach ($lists as $list) {
+            $this->checkbox_group($name, $list->id, '<span>' . $list->id . '</span> ' . esc_html($list->name), ['label_escape' => false]);
+        }
+        echo '<a href="https://www.thenewsletterplugin.com/documentation/newsletter-lists" target="_blank">'
+        . 'Click here to read more about lists.'
+        . '</a>';
+        echo '</div>';
+    }
+
+    function profiles_public($name = 'profiles') {
+        echo '<input type="hidden" name="tnp_fields[' . esc_attr($name) . ']" value="array">';
+        $fields = NewsletterAdmin::instance()->get_profiles_public();
+
+        echo '<div class="tnpc-lists">';
+        foreach ($fields as $field) {
+            $this->checkbox_group($name, $field->id, '<span>' . $field->id . '</span> ' . esc_html($field->name), ['label_escape' => false]);
+        }
+
+        echo '</div>';
+    }
+    
+    function customfields_public($name = 'customfields') {
+        echo '<input type="hidden" name="tnp_fields[' . esc_attr($name) . ']" value="array">';
+        $fields = NewsletterAdmin::instance()->get_profiles_public();
+
+        echo '<div class="tnpc-lists">';
+        foreach ($fields as $field) {
+            $this->checkbox_group($name, $field->id, '<span>' . $field->id . '</span> ' . esc_html($field->name), ['label_escape' => false]);
+        }
+
+        echo '</div>';
+    }
+
     function lists_checkboxes($name = 'lists') {
         $this->preferences_group($name);
     }
@@ -1400,7 +1504,7 @@ class NewsletterControls {
      */
     function preferences_group($name = 'preferences') {
 
-        $lists = Newsletter::instance()->get_lists();
+        $lists = NewsletterAdmin::instance()->get_lists();
 
         echo '<div class="tnpc-lists">';
         foreach ($lists as $list) {
@@ -1416,7 +1520,12 @@ class NewsletterControls {
      * 'any', 'yes', 'no' corresponding to the values 0, 1, 2.
      */
     function preferences_selects($name = 'preferences', $skip_empty = false) {
-        $lists = Newsletter::instance()->get_lists();
+        // Someone is using this method improperly
+        if (!class_exists('NewsletterAdmin')) {
+            return '';
+        }
+        
+        $lists = NewsletterAdmin::instance()->get_lists();
 
         echo '<div class="newsletter-preferences-group">';
         foreach ($lists as $list) {
@@ -1451,7 +1560,7 @@ class NewsletterControls {
 
         $value = $this->get_value($name);
 
-        $lists = Newsletter::instance()->get_lists();
+        $lists = NewsletterAdmin::instance()->get_lists();
         $options = [];
         if ($empty_label) {
             $options[''] = $empty_label;
@@ -1488,7 +1597,7 @@ class NewsletterControls {
      * @return array
      */
     function get_list_options($empty_label = null) {
-        $objs = Newsletter::instance()->get_lists();
+        $objs = NewsletterAdmin::instance()->get_lists();
         $lists = array();
         if ($empty_label) {
             $lists[''] = $empty_label;
@@ -1500,7 +1609,7 @@ class NewsletterControls {
     }
 
     function get_public_list_options($empty_label = null) {
-        $objs = Newsletter::instance()->get_lists_public();
+        $objs = NewsletterAdmin::instance()->get_lists_public();
         $lists = array();
         if ($empty_label) {
             $lists[''] = $empty_label;
@@ -1783,7 +1892,7 @@ tnp_controls_init();
      * @deprecated
      */
     function get_test_subscribers() {
-        return NewsletterUsers::instance()->get_test_users();
+        return NewsletterAdmin::instance()->get_test_users();
     }
 
     /**
@@ -1964,7 +2073,7 @@ tnp_controls_init();
             return;
         }
 
-        $languages = Newsletter::instance()->get_languages();
+        $languages = NewsletterAdmin::instance()->get_languages();
         if (!empty($empty_label)) {
             $languages = array_merge(array('' => $empty_label), $languages);
         }
@@ -1972,7 +2081,7 @@ tnp_controls_init();
     }
 
     function is_multilanguage() {
-        return Newsletter::instance()->is_multilanguage();
+        return NewsletterAdmin::instance()->is_multilanguage();
     }
 
     /**
@@ -1987,7 +2096,7 @@ tnp_controls_init();
             return;
         }
 
-        $language_options = Newsletter::instance()->get_languages();
+        $language_options = NewsletterAdmin::instance()->get_languages();
 
         if (empty($language_options)) {
             echo __('Your multilanguage plugin is not supported or there are no languages defined', 'newsletter');

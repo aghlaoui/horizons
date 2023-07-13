@@ -287,13 +287,13 @@ class TNP_Composer {
         if (!empty($email->options['sender_email'])) {
             $controls->data['sender_email'] = $email->options['sender_email'];
         } else {
-            $controls->data['sender_email'] = Newsletter::instance()->options['sender_email'];
+            $controls->data['sender_email'] = Newsletter::instance()->get_sender_email();
         }
 
         if (!empty($email->options['sender_name'])) {
             $controls->data['sender_name'] = $email->options['sender_name'];
         } else {
-            $controls->data['sender_name'] = Newsletter::instance()->options['sender_name'];
+            $controls->data['sender_name'] = Newsletter::instance()->get_sender_name();
         }
 
         $controls->data = array_merge(TNP_Composer::get_global_style_defaults(), $controls->data);
@@ -522,11 +522,11 @@ class TNP_Composer {
 
     static function post_content($post) {
         $content = $post->post_content;
-        
-        if (!has_block($post)) {
+
+        if (function_exists('has_blocks') && !has_blocks($post)) {
             $content = wpautop($content);
         }
-        
+
         if (true || $options['enable shortcodes']) {
             remove_shortcode('gallery');
             add_shortcode('gallery', 'tnp_gallery_shortcode');
@@ -648,9 +648,13 @@ class TNP_Composer {
 
     static function get_style($options, $prefix, $composer, $type = 'text', $attrs = []) {
         $style = new TNP_Style();
+        $style->scalable = empty($options[$prefix . 'font_size']);
         $scale = 1.0;
-        if (!empty($attrs['scale'])) {
-            $scale = (float) $attrs['scale'];
+
+        if ($style->scalable) {
+            if (!empty($attrs['scale'])) {
+                $scale = (float) $attrs['scale'];
+            }
         }
         if (!empty($prefix)) {
             $prefix .= '_';
@@ -658,8 +662,12 @@ class TNP_Composer {
 
         $style->font_family = empty($options[$prefix . 'font_family']) ? $composer[$type . '_font_family'] : $options[$prefix . 'font_family'];
         $style->font_size = empty($options[$prefix . 'font_size']) ? round($composer[$type . '_font_size'] * $scale) : $options[$prefix . 'font_size'];
+
         $style->font_color = empty($options[$prefix . 'font_color']) ? $composer[$type . '_font_color'] : $options[$prefix . 'font_color'];
         $style->font_weight = empty($options[$prefix . 'font_weight']) ? $composer[$type . '_font_weight'] : $options[$prefix . 'font_weight'];
+        if (!empty($options[$prefix . 'font_align'])) {
+            $style->align = $options[$prefix . 'font_align'];
+        }
         if ($type === 'button') {
             $style->background = empty($options[$prefix . 'background']) ? $composer[$type . '_background_color'] : $options[$prefix . 'background'];
         }
@@ -728,7 +736,7 @@ class TNP_Composer {
                     $output .= "\n";
                     continue;
                 }
-                
+
                 self::process_dom_element($node, $output);
 
                 if ($node->tagName == 'li') {
@@ -786,12 +794,17 @@ class TNP_Style {
     var $font_weight;
     var $font_color;
     var $background;
+    var $align;
+    var $scalable = true;
 
     function echo_css($scale = 1.0) {
         echo 'font-size: ', round($this->font_size * $scale), 'px;';
         echo 'font-family: ', $this->font_family, ';';
         echo 'font-weight: ', $this->font_weight, ';';
         echo 'color: ', $this->font_color, ';';
+        if (!empty($this->align)) {
+            echo 'text-align: ', $this->align, ';';
+        }
     }
 
 }

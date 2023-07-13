@@ -1,11 +1,9 @@
 <?php
 /* @var $wpdb wpdb */
-/* @var $this NewsletterStatistics */
+/* @var $this NewsletterStatisticsAdmin */
+/* @var $controls NewsletterControls */
 
 defined('ABSPATH') || exit;
-
-require_once NEWSLETTER_INCLUDES_DIR . '/controls.php';
-$controls = new NewsletterControls();
 
 wp_enqueue_script('tnp-chart');
 
@@ -61,13 +59,15 @@ if (empty($emails)) {
 </script>
 
 <div class="wrap tnp-statistics tnp-statistics-index" id="tnp-wrap">
-    <?php include NEWSLETTER_DIR . '/tnp-header.php' ?>
+    <?php include NEWSLETTER_ADMIN_HEADER ?>
     <div id="tnp-heading">
         <h2><?php _e('Overall basic statistics (last 20 newsletters)', 'newsletter') ?></h2>
         <p>More details, including Automated and Autoresponder newsletter statistics are available with the <a href="https://www.thenewsletterplugin.com/reports?utm_source=reports&utm_campaign=plugin" target="_blank">Reports Addon</a>.</p>
     </div>
 
     <div id="tnp-body" class="tnp-statistics">
+        
+        <?php $controls->show() ?>
 
         <div class="row">
             <div class="col-md-3">

@@ -288,7 +288,7 @@ class NewsletterFields {
     public function align($name = 'align') {
         $this->select($name,
                 __('Align', 'newsletter'),
-                ['center' => __('Center', 'newsletter'), 'left' => __('Left', 'newsletter'), 'right' => __('Right')]
+                ['center' => __('Center', 'newsletter'), 'left' => __('Left', 'newsletter'), 'right' => __('Right', 'newsletter')]
         );
     }
 
@@ -374,6 +374,7 @@ class NewsletterFields {
                     'family_default' => false,
                     'size_default' => false,
                     'weight_default' => false,
+                    'align'=>false
         ]);
 
         $this->_open('tnpf-button');
@@ -400,6 +401,11 @@ class NewsletterFields {
         }
         echo '<div style="clear: both"></div>';
         echo '</div>';
+        
+        if ($attrs['align']) {
+            $this->controls->select($name . '_align', ['center'=>'Center', 'left'=>'Left', 'right'=>'Right']);
+        }
+        
         $this->controls->css_font($name . '_font', [
             'weight' => $attrs['weight'],
             'family_default' => $attrs['family_default'],
@@ -685,11 +691,16 @@ class NewsletterFields {
             'family_default' => false,
             'size_default' => false,
             'weight_default' => false,
+            'align' => false
                 ], $attrs);
 
         $this->_open('tnp-font');
         $this->_label($label);
 
+        if ($attrs['align']) {
+            $this->controls->select($name . '_align', ['center'=>'Center', 'left'=>'Left', 'right'=>'Right']);
+        }
+        
         $this->controls->css_font_family($name . '_family', !empty($attrs['family_default']));
 
         if ($attrs['size']) {

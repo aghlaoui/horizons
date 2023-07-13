@@ -1,13 +1,12 @@
 <?php
-/* @var $this NewsletterSystem */
 /* @var $wpdb wpdb */
+/* @var $this NewsletterSystemAdmin */
+/* @var $controls NewsletterControls */
+
 
 defined('ABSPATH') || exit;
 
 wp_enqueue_script('tnp-chart');
-
-include_once NEWSLETTER_INCLUDES_DIR . '/controls.php';
-$controls = new NewsletterControls();
 
 $newsletter = Newsletter::instance();
 $mailer = $newsletter->get_mailer();
@@ -47,6 +46,13 @@ if ($controls->is_action('reset_warnings')) {
     $controls->add_message_done();
 }
 
+if ($controls->is_action('reset_news')) {
+    update_option('newsletter_news_dismissed', []);
+    update_option('newsletter_news', []);
+    update_option('newsletter_news_updated', 0);
+    $controls->add_message_done();
+}
+
 if ($controls->is_action('stats_email_column_upgrade')) {
     $this->query("alter table " . NEWSLETTER_STATS_TABLE . " drop index email_id");
     $this->query("alter table " . NEWSLETTER_STATS_TABLE . " drop index user_id");
@@ -80,8 +86,9 @@ $tnp_wpdb = new TNP_WPDB(DB_USER, DB_PASSWORD, DB_NAME, DB_HOST);
 
 function tnp_describe_table($table) {
     global $wpdb;
-    $rs = $wpdb->get_results("show full columns from " . esc_sql($table));
+    $rs = $wpdb->get_results("show full columns from " . esc_sql($wpdb->prefix . $table));
     ?>
+    <h4><?php echo esc_html($wpdb->prefix) ?><?php echo esc_html($table) ?></h4>
     <table class="tnp-db-table">
         <thead>
             <tr>
@@ -118,21 +125,26 @@ function tnp_describe_table($table) {
 
 <div class="wrap tnp-system tnp-system-status" id="tnp-wrap">
 
-    <?php include NEWSLETTER_DIR . '/tnp-header.php'; ?>
+    <?php include NEWSLETTER_DIR . '/header.php'; ?>
 
     <div id="tnp-heading">
 
-        <h2><?php _e('System Status', 'newsletter') ?></h2>
-
+        <h2><?php _e('System', 'newsletter') ?></h2>
+        <?php include __DIR__ . '/nav.php' ?>
     </div>
 
     <div id="tnp-body">
+
+        <?php $controls->show(); ?>
 
         <form method="post" action="">
             <?php $controls->init(); ?>
 
             <p>
                 <?php $controls->btn('reset_warnings', __('Reset warnings', 'newsletter')) ?>
+                <?php if (NEWSLETTER_DEBUG) { ?>
+                    <?php $controls->btn('reset_news', __('Reset news', 'newsletter')) ?>
+                <?php } ?>
             </p>
             <h3>Delivery</h3>
             <table class="widefat" id="tnp-status-table">
@@ -206,34 +218,70 @@ function tnp_describe_table($table) {
                                 Runs prematurely interrupted: <?php echo $stats->interrupted ?><br>
 
 
-                                <canvas id="tnp-send-chart" style="width: 550px; height: 150px"></canvas>
+                                <canvas id="tnp-send-chart" style="width: 100%; height: 200px"></canvas>
+                                <canvas id="tnp-send-speed" style="width: 100%; height: 200px"></canvas>
                                 <script>
                                     jQuery(function () {
                                         var sendChartData = {
                                             labels: <?php echo json_encode(range(1, count($stats->means))) ?>,
                                             datasets: [
                                                 {
-                                                    label: "Batch Average Time",
+                                                    label: "Seconds to complete a batch",
                                                     data: <?php echo json_encode($stats->means) ?>,
                                                     borderColor: '#2980b9',
                                                     fill: false
-                                                }/*,
-                                                 {
-                                                 label: "Batch Average Time",
-                                                 data: <?php echo json_encode($stats->sizes) ?>,
-                                                 borderColor: '#b98028',
-                                                 fill: false      
-                                                 }*/]
+                                                }
+                                            ]
                                         };
                                         var sendChartConfig = {
                                             type: "line",
                                             data: sendChartData,
                                             options: {
                                                 responsive: false,
-                                                maintainAspectRatio: false
+                                                maintainAspectRatio: false,
+                                                scales: {
+                                                    yAxes: [{
+                                                            type: "linear",
+                                                            ticks: {
+                                                                beginAtZero: true
+                                                            }
+                                                        }
+                                                    ]
+                                                }
                                             }
                                         };
                                         new Chart('tnp-send-chart', sendChartConfig);
+
+
+                                        var sendSpeedData = {
+                                            labels: <?php echo json_encode(range(1, count($stats->speeds))) ?>,
+                                            datasets: [
+                                                {
+                                                    label: "Emails per second",
+                                                    data: <?php echo json_encode($stats->speeds) ?>,
+                                                    borderColor: '#2980b9',
+                                                    fill: false
+                                                }
+                                            ]
+                                        };
+                                        var sendSpeedConfig = {
+                                            type: "line",
+                                            data: sendSpeedData,
+                                            options: {
+                                                responsive: false,
+                                                maintainAspectRatio: false,
+                                                scales: {
+                                                    yAxes: [{
+                                                            type: "linear",
+                                                            ticks: {
+                                                                beginAtZero: true
+                                                            }
+                                                        }
+                                                    ]
+                                                }
+                                            }
+                                        };
+                                        new Chart('tnp-send-speed', sendSpeedConfig);
                                     });
                                 </script>
                                 <br>
@@ -250,9 +298,21 @@ function tnp_describe_table($table) {
                             </td>
                             <td>
                                 Not enough data available.
+                                <?php $controls->button_reset('reset_send_stats') ?>
                             </td>
                         </tr>
                     <?php } ?>
+                        <tr>
+                        <td>
+                            NEWSLETTER_SEND_DELAY
+                        </td>
+                        <td>
+                            &nbsp;
+                        </td>
+                        <td>
+                            <?php echo esc_html(NEWSLETTER_SEND_DELAY) ?> milliseconds
+                        </td>
+                    </tr>
                 </tbody>
             </table>
 
@@ -519,8 +579,6 @@ function tnp_describe_table($table) {
                     $name = gethostbyaddr($ip);
                     $res = true;
                     if (strpos($name, '.secureserver.net') !== false) {
-                        //$smtp = get_option('newsletter_main_smtp');
-                        //if (!empty($smtp['enabled']))
                         $res = false;
                         $message = 'If you\'re hosted with GoDaddy, be sure to set their SMTP (relay-hosting.secureserver.net, without username and password) to send emails
                                     on Newsletter SMTP panel.
@@ -530,7 +588,7 @@ function tnp_describe_table($table) {
                         $res = false;
                         $message = 'If you\'re hosted with Aruba consider to use an external SMTP (Sendgrid, Mailjet, Mailgun, Amazon SES, Elasticemail, Sparkpost, ...)
                                     since their mail service is not good. If you have your personal email with them, you can try to use the SMTP of your
-                                    pesonal account. Ask the support for the SMTP parameters and configure them on Newsletter SMTP panel.';
+                                    pesonal account. Ask the support for the SMTP parameters and usae an SMTP plugin.';
                     }
                     ?>
                     <tr>
@@ -1309,7 +1367,7 @@ function tnp_describe_table($table) {
                                 <?php $this->condition_flag($condition) ?>
                             </td>
                             <td>
-                                <?php print_r($r) ?>
+                                <?php esc_html(print_r($r)) ?>
                             </td>
                         </tr>
                         <?php
@@ -1322,7 +1380,7 @@ function tnp_describe_table($table) {
                                 <?php $this->condition_flag($condition) ?>
                             </td>
                             <td>
-                                <?php print_r($r) ?>
+                                <?php esc_html(print_r($r)) ?>
                             </td>
                         </tr>
                         <?php
@@ -1335,7 +1393,7 @@ function tnp_describe_table($table) {
                                 <?php $this->condition_flag($condition) ?>
                             </td>
                             <td>
-                                <?php print_r($r) ?>
+                                <?php esc_html(print_r($r)) ?>
                             </td>
                         </tr>
                         <?php
@@ -1348,81 +1406,62 @@ function tnp_describe_table($table) {
                                 <?php $this->condition_flag($condition) ?>
                             </td>
                             <td>
-                                <?php print_r($r) ?>
+                                <?php esc_html(print_r($r)) ?>
                             </td>
                         </tr>
-                        
+
                         <?php if (class_exists('NewsletterAutomated')) { ?>
-                        <?php
-                        $r = $wpdb->get_row("check table " . $wpdb->prefix . 'newsletter_automated');
-                        $condition = $r->Msg_text == 'OK' ? 1 : 0;
-                        ?>
-                        <tr>
-                            <td><code><?php echo $wpdb->prefix . 'newsletter_automated' ?></code></td>
-                            <td>
-                                <?php $this->condition_flag($condition) ?>
-                            </td>
-                            <td>
-                                <?php print_r($r) ?>
-                            </td>
-                        </tr>
+                            <?php
+                            $r = $wpdb->get_row("check table " . $wpdb->prefix . 'newsletter_automated');
+                            $condition = $r->Msg_text == 'OK' ? 1 : 0;
+                            ?>
+                            <tr>
+                                <td><code><?php echo $wpdb->prefix . 'newsletter_automated' ?></code></td>
+                                <td>
+                                    <?php $this->condition_flag($condition) ?>
+                                </td>
+                                <td>
+                                    <?php esc_html(print_r($r)) ?>
+                                </td>
+                            </tr>
                         <?php } ?>
-                        
+
                         <?php if (class_exists('NewsletterAutoresponder')) { ?>
-                        <?php
-                        $r = $wpdb->get_row("check table " . $wpdb->prefix . 'newsletter_autoresponder');
-                        $condition = $r->Msg_text == 'OK' ? 1 : 0;
-                        ?>
-                        <tr>
-                            <td><code><?php echo $wpdb->prefix . 'newsletter_autoresponder' ?></code></td>
-                            <td>
-                                <?php $this->condition_flag($condition) ?>
-                            </td>
-                            <td>
-                                <?php print_r($r) ?>
-                            </td>
-                        </tr>
-                        <?php
-                        $r = $wpdb->get_row("check table " . $wpdb->prefix . 'newsletter_autoresponder_steps');
-                        $condition = $r->Msg_text == 'OK' ? 1 : 0;
-                        ?>
-                        <tr>
-                            <td><code><?php echo $wpdb->prefix . 'newsletter_autoresponder_steps' ?></code></td>
-                            <td>
-                                <?php $this->condition_flag($condition) ?>
-                            </td>
-                            <td>
-                                <?php print_r($r) ?>
-                            </td>
-                        </tr>
+                            <?php
+                            $r = $wpdb->get_row("check table " . $wpdb->prefix . 'newsletter_autoresponder');
+                            $condition = $r->Msg_text == 'OK' ? 1 : 0;
+                            ?>
+                            <tr>
+                                <td><code><?php echo $wpdb->prefix . 'newsletter_autoresponder' ?></code></td>
+                                <td>
+                                    <?php $this->condition_flag($condition) ?>
+                                </td>
+                                <td>
+                                    <?php esc_html(print_r($r)) ?>
+                                </td>
+                            </tr>
+                            <?php
+                            $r = $wpdb->get_row("check table " . $wpdb->prefix . 'newsletter_autoresponder_steps');
+                            $condition = $r->Msg_text == 'OK' ? 1 : 0;
+                            ?>
+                            <tr>
+                                <td><code><?php echo $wpdb->prefix . 'newsletter_autoresponder_steps' ?></code></td>
+                                <td>
+                                    <?php $this->condition_flag($condition) ?>
+                                </td>
+                                <td>
+                                    <?php esc_html(print_r($r)) ?>
+                                </td>
+                            </tr>
                         <?php } ?>
                     </tbody>
                 </table>
 
                 <h3>Database tables' structure</h3>
-                <h3>Database tables' status</h3>
-                <table class="widefat">
-                    <thead>
-                        <tr>
-                            <th>Table</th>
-                            <th>Structure</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><code><?php echo NEWSLETTER_USERS_TABLE ?></code></td>
-                            <td>
-                                <?php tnp_describe_table(NEWSLETTER_USERS_TABLE) ?>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><code><?php echo NEWSLETTER_EMAILS_TABLE ?></code></td>
-                            <td>
-                                <?php tnp_describe_table(NEWSLETTER_EMAILS_TABLE) ?>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                <?php tnp_describe_table('newsletter') ?>
+                <?php tnp_describe_table('newsletter_emails') ?>
+                <?php tnp_describe_table('newsletter_sent') ?>
+                <?php tnp_describe_table('newsletter_stats') ?>
 
                 <h3>Update plugins data</h3>
                 <pre style="font-size: 11px; font-family: monospace; background-color: #efefef; color: #444"><?php echo esc_html(print_r(get_site_transient('update_plugins'), true)); ?></pre>
@@ -1430,7 +1469,7 @@ function tnp_describe_table($table) {
             <?php } else { ?>
 
                 <p>
-                    <a href="<?php echo add_query_arg('advanced', '1', $_SERVER['REQUEST_URI']) ?>">Show advanced parameters</a>
+                    <a href="?page=newsletter_system_status&advanced=1">Show advanced parameters</a>
                 </p>    
             <?php } ?>
         </form>

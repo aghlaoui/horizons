@@ -1,27 +1,26 @@
 <?php
-if (!defined('ABSPATH')) exit;
+/* @var $this NewsletterSubscriptionAdmin */
+/* @var $controls NewsletterSubscriptionAdmin */
 
-@include_once NEWSLETTER_INCLUDES_DIR . '/controls.php';
-$controls = new NewsletterControls();
-$module = NewsletterSubscription::instance();
+defined('ABSPATH') || exit;
 
 if (!$controls->is_action()) {
-    $controls->data = $module->get_options('forms');
+    $controls->data = $this->get_options('htmlforms');
 }
 
 if ($controls->is_action('save')) {
-    $module->save_options($controls->data, 'forms');
+    $this->save_options($controls->data, 'htmlforms');
     $controls->add_message_saved();
 }
 ?>
 
 <div class="wrap" id="tnp-wrap">
 
-    <?php include NEWSLETTER_DIR . '/tnp-header.php'; ?>
+    <?php include NEWSLETTER_DIR . '/header.php'; ?>
 
     <div id="tnp-heading">
 
-        <h2><?php _e('Custom Forms', 'newsletter') ?></h2>
+        <h2><?php _e('HTML Forms', 'newsletter') ?></h2>
         <p>
             Here you can store your hand coded forms to recall them from short codes.
             <a href="https://www.thenewsletterplugin.com/plugins/newsletter/newsletter-forms" target="_blank">Read more about forms</a>.
@@ -30,6 +29,8 @@ if ($controls->is_action('save')) {
     </div>
 
     <div id="tnp-body">
+        
+        <?php $controls->show(); ?>
 
         <form method="post" action="">
             <?php $controls->init(); ?>

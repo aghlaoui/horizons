@@ -1,10 +1,8 @@
 <?php
-/* @var $this NewsletterUsers */
+/* @var $this NewsletterUsersAdmin */
+/* @var $controls NewsletterControls */
 
 defined('ABSPATH') || exit;
-
-require_once NEWSLETTER_INCLUDES_DIR . '/controls.php';
-$controls = new NewsletterControls();
 
 $id = (int) $_GET['id'];
 $user = $this->get_user($id);
@@ -60,7 +58,7 @@ if (!$controls->is_action()) {
     $controls->data = (array) $user;
 }
 
-$options_profile = NewsletterSubscription::instance()->get_options('profile');
+$options_profile = NewsletterSubscription::instance()->get_options('customfields');
 
 function percent($value, $total) {
     if ($total == 0) {
@@ -75,6 +73,7 @@ function percentValue($value, $total) {
     }
     return round($value / $total * 100);
 }
+
 ?>
 
 <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
@@ -84,7 +83,7 @@ function percentValue($value, $total) {
 
 <div class="wrap tnp-users tnp-users-edit" id="tnp-wrap">
 
-    <?php include NEWSLETTER_DIR . '/tnp-header.php'; ?>
+    <?php include NEWSLETTER_DIR . '/header.php'; ?>
 
     <div id="tnp-heading">
         <?php $controls->title_help('/subscribers-and-management/') ?>
@@ -93,6 +92,8 @@ function percentValue($value, $total) {
     </div>
 
     <div id="tnp-body">
+        
+        <?php $controls->show(); ?>
 
         <form method="post" action="">
             <p>
@@ -107,7 +108,7 @@ function percentValue($value, $total) {
                 <ul>
                     <li><a href="#tabs-general"><?php _e('General', 'newsletter') ?></a></li>
                     <li><a href="#tabs-preferences"><?php _e('Lists', 'newsletter') ?></a></li>
-                    <li><a href="#tabs-profile"><?php _e('Extra fields', 'newsletter') ?></a></li>
+                    <li><a href="#tabs-profile"><?php _e('Custom fields', 'newsletter') ?></a></li>
                     <li><a href="#tabs-other"><?php _e('Other', 'newsletter') ?></a></li>
                     <li><a href="#tabs-newsletters"><?php _e('Newsletters', 'newsletter') ?></a></li>
                     <li><a href="#tabs-history"><?php _e('Logs', 'newsletter') ?></a></li>
@@ -197,13 +198,13 @@ function percentValue($value, $total) {
                         </thead>
                         <tbody>
                             <?php
-                            for ($i = 1; $i <= NEWSLETTER_PROFILE_MAX; $i++) {
+                            foreach ($this->get_all_customfields() as $customfield) {
                                 echo '<tr><td>';
-                                echo $i;
+                                echo $customfield->id;
                                 echo '</td><td>';
-                                echo esc_html($options_profile['profile_' . $i]);
+                                echo esc_html($customfield->name);
                                 echo '</td><td>';
-                                $controls->text('profile_' . $i, 70);
+                                $controls->text('profile_' . $customfield->id, 70);
                                 echo '</td></tr>';
                             }
                             ?>

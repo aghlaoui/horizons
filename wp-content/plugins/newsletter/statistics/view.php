@@ -1,12 +1,10 @@
 <?php
-/* @var $this NewsletterStatistics */
+/* @var $this NewsletterStatisticsAdmin */
+/* @var $controls NewsletterControls */
 
 defined('ABSPATH') || exit;
 
 wp_enqueue_script('tnp-chart');
-
-require_once NEWSLETTER_INCLUDES_DIR . '/controls.php';
-$controls = new NewsletterControls();
 
 $email = $this->get_email($_GET['id']);
 $report = $this->get_statistics($email);
@@ -24,13 +22,15 @@ if (empty($email->track)) {
 ?>
 
 <div class="wrap tnp-statistics tnp-statistics-view" id="tnp-wrap">
-    <?php include NEWSLETTER_DIR . '/tnp-header.php' ?>
+    <?php include NEWSLETTER_ADMIN_HEADER ?>
     <div id="tnp-heading">
-        <h2><?php _e('Statistics of', 'newsletter') ?> "<?php echo htmlspecialchars($email->subject); ?>"</h2>
-        <p>Retargeting and subscriber detailed list are available with <a href="https://www.thenewsletterplugin.com/reports" target="_blank">Reports Addon</a>.</p>
+        <h2><?php echo esc_html($email->subject) ?></h2>
+        <?php include __DIR__ . '/nav.php'?>
     </div>
 
     <div id="tnp-body" style="min-width: 500px">
+        
+        <?php $controls->show() ?>
 
         <div class="row">
             <div class="col-md-3">

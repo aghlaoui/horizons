@@ -1,34 +1,31 @@
 <?php
+/* @var $this NewsletterMainAdmin */
+/* @var $controls NewsletterControls */
+
 defined('ABSPATH') || exit;
 
 // Very very naif
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_GET['action']) && $_GET['action'] == 'save') {
 
-    // Sender name
-    $module = Newsletter::instance();
-    $options = $module->get_options();
+    // Sender
+    $options = $this->get_options();
     $options['sender_name'] = trim(stripslashes($_POST['sender_name']));
     $options['sender_email'] = trim(strtolower(stripslashes($_POST['sender_email'])));
-    $module->save_options($options);
+    $this->save_options($options);
 
-    // Profile setting
-    $module = NewsletterSubscription::instance();
-    $options = $module->get_options('profile');
+    // Form
+    $options = NewsletterSubscriptionAdmin::instance()->get_form_options();
     $options['privacy_status'] = isset($_POST['field_privacy']) ? 1 : 0;
     $options['name_status'] = isset($_POST['field_name']) ? 2 : 0;
-    $options['subscribe'] = trim(stripslashes($_POST['field_subscribe']));
-    if (empty($options['subscribe']))
-        $options['subscribe'] = 'Subscribe';
-    $module->save_options($options, 'profile');
+    NewsletterSubscriptionAdmin::instance()->save_options($options, 'form');
     die();
 }
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_GET['action']) && $_GET['action'] == 'test') {
-    $module = Newsletter::instance();
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['action']) && $_GET['action'] == 'test') {
     $email = $_POST['test_email'];
-    $status_options = $module->get_options('status');
+    $status_options = $this->get_options('status');
 
-    if (!NewsletterModule::is_email($email)) {
+    if (!$this->is_email($email)) {
         echo _e('Please check the email address, it seems wrong.', 'newsletter');
         die();
     }
@@ -36,36 +33,31 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_GET['action']) && $_GET['act
     $text = array();
     $text['html'] = '<p>This is an <b>HTML</b> test email sent using the sender data set on Newsletter main setting. <a href="https://www.thenewsletterplugin.com">This is a link to an external site</a>.</p>';
     $text['text'] = 'This is a textual test email part sent using the sender data set on Newsletter main setting.';
-    $r = $module->mail($email, 'Newsletter test email at ' . date(DATE_ISO8601), $text);
+    $r = Newsletter::instance()->mail($email, 'Newsletter test email at ' . date(DATE_ISO8601), $text);
 
     if ($r) {
-        $status_options['mail'] = 1;
-        $module->save_options($status_options, 'status');
+        //$status_options['mail'] = 1;
+        //$module->save_options($status_options, 'status');
         echo _e('Check your mailbox for a test message. Check the spam folder as well.', 'newsletter');
         die();
     } else {
-        $status_options['mail'] = 0;
-        $status_options['mail_error'] = $module->mail_last_error;
-        $module->save_options($status_options, 'status');
-        echo _e('There was an error. Complete the setup and then use the status panel to check it out.', 'newsletter');
+        //$status_options['mail'] = 0;
+        //$status_options['mail_error'] = $module->mail_last_error;
+        //$module->save_options($status_options, 'status');
+        echo _e('There was an error. Complete the setup and then use the System panels to test again.', 'newsletter');
         die();
     }
     die();
 }
 
-$profile_options = NewsletterSubscription::instance()->get_options('profile');
-$main_options = Newsletter::instance()->get_options();
-$subscription_options = NewsletterSubscription::instance()->get_options();
+$profile_options = NewsletterSubscriptionAdmin::instance()->get_form_options();
+$subscription_options = NewsletterSubscriptionAdmin::instance()->get_options();
 
-$logger = Newsletter::instance()->logger;
-
-$page_exists = get_option('newsletter_page');
-
-if (empty($page_exists)) {
-    $module = Newsletter::instance();
-    $logger->info('Dedicated page creation');
+if (empty($this->get_option('page'))) {
+    
+    $this->logger->info('Adding a dedicated page');
     // Page creation
-    $page = array();
+    $page = [];
     $page['post_title'] = 'Newsletter';
     $page['post_content'] = '[newsletter]';
     $page['post_status'] = 'publish';
@@ -77,26 +69,25 @@ if (empty($page_exists)) {
     // Insert the post into the database
     $page_id = wp_insert_post($page);
 
-    $main_options['page'] = $page_id;
-    Newsletter::instance()->save_options($main_options);
-    $main_options = Newsletter::instance()->get_options();
-    $page_exists = true;
-    update_option('newsletter_page', $page_id, false);
+    $options = $this->get_main_options();
+    $options['page'] = $page_id;
+    $this->save_main_options($options);
 
     // Test subscriber creation
-    $users = $module->get_test_users();
+    $users = $this->get_test_users();
     if (!$users) {
+        $this->logger->info('Adding a test subscriber');
         global $current_user;
-        $user = array();
+        $user = [];
         $user['email'] = $current_user->user_email;
         $user['name'] = $current_user->first_name;
         $user['surname'] = $current_user->last_name;
         $user['test'] = 1;
         $user['status'] = TNP_User::STATUS_CONFIRMED;
-        $module->save_user($user);
+        $this->save_user($user);
     }
 } else {
-    $logger->info('Dedicated page already exists');
+    $this->logger->info('Dedicated page already exists');
 }
 ?>
 <style>
@@ -136,8 +127,8 @@ if (empty($page_exists)) {
                     <div>
                         <h2><?php _e('Sender', 'newsletter'); ?></h2>
                         <p><?php _e('Choose which name and email address you\'d like to appear as the sender of your newsletters.', 'newsletter'); ?></p>
-                        <input type="text" placeholder="<?php esc_attr_e('Sender name', 'newsletter') ?>" value="<?php echo esc_attr($main_options['sender_name']) ?>" name="sender_name">&nbsp;
-                        <input type="text" placeholder="<?php esc_attr_e('Sender email', 'newsletter') ?>" value="<?php echo esc_attr($main_options['sender_email']) ?>" name="sender_email">
+                        <input type="text" placeholder="<?php esc_attr_e('Sender name', 'newsletter') ?>" value="<?php echo esc_attr(Newsletter::instance()->get_sender_name()) ?>" name="sender_name">&nbsp;
+                        <input type="text" placeholder="<?php esc_attr_e('Sender email', 'newsletter') ?>" value="<?php echo esc_attr(Newsletter::instance()->get_sender_email()) ?>" name="sender_email">
                     </div>
                 </li>
 
@@ -159,10 +150,6 @@ if (empty($page_exists)) {
                                     <input type="checkbox" name="field_privacy" <?php echo $profile_options['privacy_status'] > 0 ? 'checked' : '' ?>>
                                     <span class="slider round"></span>
                                 </label>
-                            </div>
-                            <div class="tnp-col-3-boxed">
-                                <p><?php _e('Subscribe button label', 'newsletter'); ?></p>
-                                <input type="text" value="<?php echo esc_attr($profile_options['subscribe']) ?>" name="field_subscribe">
                             </div>
                         </div>
 

@@ -22,8 +22,6 @@ unset($controls->data['width']);
 
 ?>
 
-<?php $fields->select('schema', __('Schema', 'newsletter'), array('' => 'Custom', 'bright' => 'Bright', 'dark' => 'Dark'), ['after-rendering' => 'reload']) ?>
-
 <?php $fields->button( 'button', 'Button layout', [
 	'family_default' => true,
 	'size_default'   => true,

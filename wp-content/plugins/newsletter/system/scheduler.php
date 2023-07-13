@@ -1,13 +1,12 @@
 <?php
-/* @var $this NewsletterSystem */
 /* @var $wpdb wpdb */
+/* @var $this NewsletterSystemAdmin */
+/* @var $controls NewsletterControls */
+
 
 defined('ABSPATH') || exit;
 
 wp_enqueue_script('tnp-chart');
-
-include_once NEWSLETTER_INCLUDES_DIR . '/controls.php';
-$controls = new NewsletterControls();
 
 if ($controls->is_action('reset')) {
     $this->reset_cron_stats();
@@ -41,20 +40,26 @@ if ($controls->is_action('test')) {
         $controls->errors .= '<br>Report this error to your provider saying the site cannot make an HTTP call to its wp-cron.php file and copying the error message above.';
     }
 }
-
 ?>
 
 <style>
-   <?php include __DIR__ . '/css/system.css' ?>
+<?php include __DIR__ . '/css/system.css' ?>
 </style>
 
 <div class="wrap tnp-system tnp-system-scheduler" id="tnp-wrap">
 
-    <?php include NEWSLETTER_DIR . '/tnp-header.php'; ?>
+    <?php include NEWSLETTER_DIR . '/header.php'; ?>
 
     <div id="tnp-heading">
 
-        <h2><?php _e('WP Scheduler and Delivery Engine', 'newsletter') ?></h2>
+        <h2><?php _e('System', 'newsletter') ?></h2>
+        <?php include __DIR__ . '/nav.php' ?>
+
+    </div>
+
+    <div id="tnp-body">
+
+        <?php $controls->show() ?>
         <p>
             The scheduler is a WordPress component that executes <strong>background tasks</strong> 
             (publish future post, run backups, send newsletters, ...). 
@@ -67,10 +72,6 @@ if ($controls->is_action('test')) {
             <li>Configure an <a href="https://www.thenewsletterplugin.com/documentation/delivery-and-spam/newsletter-delivery-engine/" target="_blank">external cron service</a>
                 (if you have a license you can use our <a href="https://www.thenewsletterplugin.com/account/cron/" target="_blank">cron service</a>)</li>
         </ul>
-    </div>
-
-    <div id="tnp-body">
-
 
         <form method="post" action="">
             <?php $controls->init(); ?>
@@ -85,7 +86,7 @@ if ($controls->is_action('test')) {
                 </thead>
                 <?php
                 $status = $this->get_job_status();
-                $condition = $status == NewsletterSystem::JOB_OK ? 1 : 0;
+                $condition = $status == NewsletterSystemAdmin::JOB_OK ? 1 : 0;
                 ?>
                 <tr>
                     <td>Delivery background job</td>
@@ -95,16 +96,16 @@ if ($controls->is_action('test')) {
                     <td>
                         <?php
                         switch ($status) {
-                            case NewsletterSystem::JOB_MISSING:
+                            case NewsletterSystemAdmin::JOB_MISSING:
                                 echo 'The engine schedule is missing. Try to deactivate and reactivate the Newsletter plugin.';
                                 break;
-                            case NewsletterSystem::JOB_LATE:
+                            case NewsletterSystemAdmin::JOB_LATE:
                                 echo 'The engine schedule is late. You probably need and external scheduler trigger.';
                                 break;
-                            case NewsletterSystem::JOB_SKIPPED:
+                            case NewsletterSystemAdmin::JOB_SKIPPED:
                                 echo 'The engine schedule has been skipped. The scheduler is overloaded or a job has fatal error and blocks the scheduler.';
                                 break;
-                            case NewsletterSystem::JOB_OK:
+                            case NewsletterSystemAdmin::JOB_OK:
                                 echo 'Everything seems fine!';
                                 break;
                         }
@@ -113,7 +114,7 @@ if ($controls->is_action('test')) {
                         Next run: <?php echo $controls->print_date($this->get_job_schedule(), false, true) ?>
                         <br><br>
                         <?php
-                        if ($status == NewsletterSystem::JOB_LATE) {
+                        if ($status == NewsletterSystemAdmin::JOB_LATE) {
                             $controls->button('trigger', 'Run manually');
                         }
                         ?>
@@ -132,7 +133,7 @@ if ($controls->is_action('test')) {
 
                 <tr>
                     <?php
-                    $stats = NewsletterSystem::instance()->get_cron_stats();
+                    $stats = $this->get_cron_stats();
                     ?>
                     <td>
                         Cron call stats
@@ -161,16 +162,15 @@ if ($controls->is_action('test')) {
 
                             Samples <?php echo count($stats->deltas) ?>, average <?php echo $stats->avg ?>&nbsp;s, max <?php echo $stats->max ?>&nbsp;s, min <?php echo $stats->min ?>&nbsp;s
 
-                            <canvas id="tnp-cron-chart" style="width: 700px; height: 300px"></canvas>
+                            <canvas id="tnp-cron-chart" style="width: 100%; height: 300px"></canvas>
                             <script>
                                 jQuery(function () {
                                     var cronChartData = {
-                                        //labels: <?php echo json_encode(range(1, count($stats->deltas))) ?>,
                                         labels: <?php echo json_encode($stats->deltas_ts) ?>,
                                         datasets: [
                                             {
-                                                label: "Batch Average Time",
-                                                data: <?php echo json_encode(array_map(function ($v) {return $v/1000;}, $stats->deltas)) ?>,
+                                                label: "Cron intervals",
+                                                data: <?php echo json_encode($stats->deltas) ?>,
                                                 borderColor: '#2980b9',
                                                 fill: false
                                             }]
@@ -184,7 +184,15 @@ if ($controls->is_action('test')) {
                                             scales: {
                                                 x: {
                                                     type: 'linear'
-                                                }
+                                                },
+                                                yAxes: [{
+                                                        type: "linear",
+                                                        ticks: {
+                                                            beginAtZero: true
+                                                        }
+                                                    }
+                                                ]
+
                                             }
                                         }
                                     };
@@ -250,7 +258,7 @@ if ($controls->is_action('test')) {
                         WordPress scheduler auto trigger
                     </td>
                     <td class="status">
-                        <?php //$this->condition_flag($condition)  ?>
+                        <?php //$this->condition_flag($condition)     ?>
                     </td>
                     <td>
                         <?php $controls->button_test() ?>
@@ -362,7 +370,7 @@ if ($controls->is_action('test')) {
                             this is a good starting point.<br><br>
                         <?php } ?>
                         Attached functions:<br>
-                        <?php echo $functions?$functions:'[none]' ?>
+                        <?php echo $functions ? $functions : '[none]' ?>
                     </td>
                 </tr>    
 
@@ -372,7 +380,7 @@ if ($controls->is_action('test')) {
                 <tr>
                     <td>Transient <code>doing_cron</code></td>
                     <td class="status">
-                        <?php //$this->condition_flag($condition) ?>
+                        <?php //$this->condition_flag($condition)    ?>
                     </td>
                     <td>
                         <?php if ($transient) { ?>

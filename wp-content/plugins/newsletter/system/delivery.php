@@ -1,11 +1,10 @@
 <?php
-/* @var $this NewsletterSystem */
 /* @var $wpdb wpdb */
+/* @var $this NewsletterSystemAdmin */
+/* @var $controls NewsletterControls */
 
 defined('ABSPATH') || exit;
 
-include_once NEWSLETTER_INCLUDES_DIR . '/controls.php';
-$controls = new NewsletterControls();
 $newsletter = Newsletter::instance();
 
 if ($controls->is_action('test')) {
@@ -69,9 +68,6 @@ if ($mailer instanceof NewsletterDefaultMailer) {
         $service_name .= '<br>(see below)';
     }
     $icon = 'fab fa-wordpress';
-} else if ($mailer instanceof NewsletterDefaultSMTPMailer) {
-    $mailer_name = 'Internal SMTP';
-    $service_name = 'SMTP Provider';
 } else {
     $mailer_name = 'Unknown';
     $service_name = 'Unknown';
@@ -87,6 +83,7 @@ if ($mailer instanceof NewsletterDefaultMailer) {
 }
 
 $speed = Newsletter::instance()->get_send_speed();
+
 ?>
 
 <style>
@@ -95,17 +92,21 @@ $speed = Newsletter::instance()->get_send_speed();
 
 <div class="wrap tnp-system tnp-system-delivery" id="tnp-wrap">
 
-    <?php include NEWSLETTER_DIR . '/tnp-header.php'; ?>
+    <?php include NEWSLETTER_ADMIN_HEADER ?>
 
     <div id="tnp-heading">
 
-        <h2><?php _e('Email Delivery', 'newsletter') ?></h2>
-        <p>
-            Test here the email delivery and the path it runs across to your subscribers.
-        </p>
+         <h2><?php _e('System', 'newsletter') ?></h2>
+        <?php include __DIR__ . '/nav.php' ?>
+        
     </div>
 
     <div id="tnp-body">
+        
+        <?php $controls->show() ?>
+        <p>
+            Test here the email delivery and the path it runs across to your subscribers.
+        </p>
         <form method="post" action="">
             <?php $controls->init(); ?>
             <h3>Mailing test</h3>

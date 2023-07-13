@@ -1,50 +1,20 @@
 <?php
+/* @var $this NewsletterSubscriptionAdmin */
+/* @var $controls NewsletterControls */
+/* @var $logger NewsletterLogger */
+
 defined('ABSPATH') || exit;
-
-include_once NEWSLETTER_INCLUDES_DIR . '/controls.php';
-$controls = new NewsletterControls();
-$module = NewsletterSubscription::instance();
-
-$current_language = $module->get_current_language();
-
-$is_all_languages = $module->is_all_languages();
-
-$controls->add_language_warning();
-
-$options = $module->get_options('', $current_language);
 
 if ($controls->is_action()) {
     if ($controls->is_action('save')) {
-
-        $defaults = $module->get_default_options();
-
-        // Without the last curly bracket since there can be a form number apended
-        if (empty($controls->data['subscription_text'])) {
-            $controls->data['subscription_text'] = $defaults['subscription_text'];
-        }
-
-        if (empty($controls->data['confirmation_text'])) {
-            $controls->data['confirmation_text'] = $defaults['confirmation_text'];
-        }
-
-        if (empty($controls->data['confirmation_subject'])) {
-            $controls->data['confirmation_subject'] = $defaults['confirmation_subject'];
-        }
-
-        if (empty($controls->data['confirmation_message'])) {
-            $controls->data['confirmation_message'] = $defaults['confirmation_message'];
-        }
-
-        if (empty($controls->data['confirmed_text'])) {
-            $controls->data['confirmed_text'] = $defaults['confirmed_text'];
-        }
-
-        if (empty($controls->data['confirmed_subject'])) {
-            $controls->data['confirmed_subject'] = $defaults['confirmed_subject'];
-        }
-
-        if (empty($controls->data['confirmed_message'])) {
-            $controls->data['confirmed_message'] = $defaults['confirmed_message'];
+        foreach ($controls->data as $k => $v) {
+            if (strpos($k, '_custom') > 0) {
+                if (!$v) {
+                    $controls->data[str_replace('_custom', '', $k)] = '';
+                }
+                // Remove the _custom field
+                unset($controls->data[$k]);
+            }
         }
 
         $controls->data['confirmed_message'] = NewsletterModule::clean_url_tags($controls->data['confirmed_message']);
@@ -55,25 +25,21 @@ if ($controls->is_action()) {
         $controls->data['confirmed_url'] = trim($controls->data['confirmed_url']);
         $controls->data['confirmation_url'] = trim($controls->data['confirmation_url']);
 
-        $module->save_options($controls->data, '', null, $current_language);
+        $this->save_options($controls->data, '', $language);
         $controls->add_message_saved();
-    }
-
-    if ($controls->is_action('reset')) {
-        $controls->data = $module->reset_options();
     }
 
     if ($controls->is_action('test-confirmation')) {
 
-        $users = NewsletterUsers::instance()->get_test_users();
+        $users = $this->get_test_users();
         if (count($users) == 0) {
             $controls->errors = 'There are no test subscribers. Read more about test subscribers <a href="https://www.thenewsletterplugin.com/plugins/newsletter/subscribers-module#test" target="_blank">here</a>.';
         } else {
             $addresses = array();
             foreach ($users as &$user) {
                 $addresses[] = $user->email;
-                $user->language = $current_language;
-                $res = $module->send_message('confirmation', $user);
+                $user->language = $language;
+                $res = NewsletterSubscription::instance()->send_message('confirmation', $user);
                 if (!$res) {
                     $controls->errors = 'The email address ' . $user->email . ' failed.';
                     break;
@@ -87,7 +53,7 @@ if ($controls->is_action()) {
 
     if ($controls->is_action('test-confirmed')) {
 
-        $users = NewsletterUsers::instance()->get_test_users();
+        $users = $this->get_test_users();
         if (count($users) == 0) {
             $controls->errors = 'There are no test subscribers. Read more about test subscribers <a href="https://www.thenewsletterplugin.com/plugins/newsletter/subscribers-module#test" target="_blank">here</a>.';
         } else {
@@ -95,8 +61,8 @@ if ($controls->is_action()) {
             foreach ($users as $user) {
                 $addresses[] = $user->email;
                 // Force the language to send the message coherently with the current panel view
-                $user->language = $current_language;
-                $res = $module->send_message('confirmed', $user);
+                $user->language = $language;
+                $res = NewsletterSubscription::instance()->send_message('confirmed', $user);
                 if (!$res) {
                     $controls->errors = 'The email address ' . $user->email . ' failed.';
                     break;
@@ -108,22 +74,32 @@ if ($controls->is_action()) {
         }
     }
 } else {
-    $controls->data = $module->get_options('', $current_language);
+    $controls->data = $this->get_options('', $language);
 }
+
+//$this->dump($controls->data);
+
+foreach (['confirmed_text', 'confirmed_message', 'confirmation_text', 'confirmation_message', 'subscription_text'] as $key) {
+    if (!empty($controls->data[$key])) {
+        $controls->data[$key . '_custom'] = '1';
+    }
+}
+
 ?>
 
 <div class="wrap" id="tnp-wrap">
 
-    <?php include NEWSLETTER_DIR . '/tnp-header.php'; ?>
+    <?php include NEWSLETTER_ADMIN_HEADER ?>
 
     <div id="tnp-heading">
         <?php $controls->title_help('/subscription') ?>
-        <h2><?php _e('Subscription Configuration', 'newsletter') ?></h2>
-
+        <h2><?php _e('Subscription', 'newsletter') ?></h2>
+        <?php include __DIR__ . '/nav.php' ?>
     </div>
 
     <div id="tnp-body">
 
+        <?php $controls->show(); ?>
 
         <form method="post" action="">
             <?php $controls->init(); ?>
@@ -133,11 +109,16 @@ if ($controls->is_action()) {
                     <li><a href="#tabs-2"><?php _e('Subscription', 'newsletter') ?></a></li>
                     <li><a href="#tabs-4"><?php _e('Welcome', 'newsletter') ?></a></li>
                     <li><a href="#tabs-3"><?php _e('Activation', 'newsletter') ?></a></li>
+                    <?php if (NEWSLETTER_DEBUG) { ?>
+                        <li><a href="#tabs-debug">Debug</a></li>
+                    <?php } ?>
                 </ul>
 
                 <div id="tabs-general">
 
-                    <?php if ($is_all_languages) { ?>
+                    <?php $this->language_notice(); ?>
+
+                    <?php if (!$language) { ?>
                         <table class="form-table">
 
                             <tr>
@@ -161,42 +142,70 @@ if ($controls->is_action()) {
                                 </td>
                             </tr>
                         </table>
-                    <?php } else { ?>
-                        <?php $controls->switch_to_all_languages_notice(); ?>
                     <?php } ?>
 
                 </div>
 
 
                 <div id="tabs-2">
+                    <?php $this->language_notice(); ?>
                     <table class="form-table">
                         <tr>
-                            <th><?php _e('Subscription page', 'newsletter') ?><br><?php echo $controls->help('/newsletter-tags') ?></th>
+                            <th><?php _e('Subscription page', 'newsletter') ?></th>
                             <td>
-                                <?php $controls->wp_editor('subscription_text'); ?>
+
+                                <?php $controls->checkbox2('subscription_text_custom', 'Customize', ['onchange' => 'tnp_refresh_binds()']); ?>
+                                <div data-bind="options-subscription_text_custom">
+                                    <?php $controls->wp_editor('subscription_text', ['editor_height' => 150], ['default' => $this->get_default_text('subscription_text')]); ?>
+                                    <p class="description">
+                                        Remember to add at least the <code>[newsletter_form]</code> shortcode or 
+                                        <a href="https://www.thenewsletterplugin.com/documentation/subscription/subscription-form-shortcodes/" target="_blank">other shortcodes</a> to include a form. If you
+                                        don't want this page to show a subscription form, remove the shortcode.
+                                    </p>
+                                </div>
+                                <div data-bind="!options-subscription_text_custom" class="tnpc-default-text">
+                                    <?php echo wp_kses_post($this->get_default_text('subscription_text')) ?>
+                                </div>
+
+
                             </td>
                         </tr>
 
                     </table>
 
-                    <table class="form-table">
-                        <tr>
-                            <th><?php _e('Repeated subscriptions', 'newsletter') ?></th>
-                            <td>
-                                <?php
-                                $controls->select('multiple', ['0' => __('Not allowed', 'newsletter'), '1' => __('Allowed', 'newsletter'),
-                                    '1' => __('Allowed force single opt-in', 'newsletter')]);
-                                ?> 
-                                <br><br>
-                                <?php $controls->wp_editor('error_text'); ?>
-                                <p class="description">Shown only when "not allowed" is selected<p>
-                            </td>
-                        </tr>
-                    </table>
+                    <?php if (!$language) { ?>
+                        <table class="form-table">
+                            <tr>
+                                <th>
+                                    <?php _e('Repeated subscriptions', 'newsletter') ?>
+                                </th>
+                                <td>
+                                    <?php
+                                    $controls->select('multiple', ['0' => __('Not allowed', 'newsletter'), '1' => __('Allowed', 'newsletter'),
+                                        '2' => __('Allowed force single opt-in', 'newsletter')]);
+                                    ?> 
+                                    <br><br>
+
+                                    <?php $controls->checkbox2('error_text_custom', 'Customize', ['onchange' => 'tnp_refresh_binds()']); ?>
+                                    <div data-bind="options-error_text_custom">
+                                        <?php $controls->wp_editor('error_text', ['editor_height' => 150], ['default' => $this->get_default_text('error_text')]); ?>
+                                    </div>
+                                    <div data-bind="!options-error_text_custom" class="tnpc-default-text">
+                                        <?php echo wp_kses_post($this->get_default_text('error_text')) ?>
+                                    </div>
+
+                                    <p class="description">Shown only when "not allowed" is selected<p>
+                                </td>
+                            </tr>
+                        </table>
+                    <?php } ?>
+
                 </div>
 
 
                 <div id="tabs-3">
+
+                    <?php $this->language_notice(); ?>
 
                     <p><?php _e('Only for double opt-in mode.', 'newsletter') ?></p>
 
@@ -205,7 +214,13 @@ if ($controls->is_action()) {
                         <tr>
                             <th><?php _e('Activation message', 'newsletter') ?></th>
                             <td>
-                                <?php $controls->wp_editor('confirmation_text'); ?>
+                                <?php $controls->checkbox2('confirmation_text_custom', 'Customize', ['onchange' => 'tnp_refresh_binds()']); ?>
+                                <div data-bind="options-confirmation_text_custom">
+                                    <?php $controls->wp_editor('confirmation_text', ['editor_height' => 150], ['default' => $this->get_default_text('confirmation_text')]); ?>
+                                </div>
+                                <div data-bind="!options-confirmation_text_custom" class="tnpc-default-text">
+                                    <?php echo wp_kses_post($this->get_default_text('confirmation_text')) ?>
+                                </div>
                             </td>
                         </tr>
 
@@ -221,7 +236,16 @@ if ($controls->is_action()) {
                         <tr>
                             <th><?php _e('Activation email', 'newsletter') ?></th>
                             <td>
-                                <?php $controls->email('confirmation', 'wordpress'); ?>
+                                <?php $controls->text('confirmation_subject', 70, $this->get_default_text('confirmation_subject')); ?>
+                                <br><br>
+                                <?php $controls->checkbox2('confirmation_message_custom', 'Customize', ['onchange' => 'tnp_refresh_binds()']); ?>
+                                <div data-bind="options-confirmation_message_custom">
+                                    <?php $controls->wp_editor('confirmation_message', ['editor_height' => 150], ['default' => $this->get_default_text('confirmation_message')]); ?>
+                                </div>
+                                <div data-bind="!options-confirmation_message_custom" class="tnpc-default-text">
+                                    <?php echo wp_kses_post($this->get_default_text('confirmation_message')) ?>
+                                </div>
+
                                 <br>
                                 <?php $controls->btn('test-confirmation', __('Test', 'newsletter'), ['secondary' => true]); ?>
                             </td>
@@ -231,11 +255,19 @@ if ($controls->is_action()) {
 
 
                 <div id="tabs-4">
+
+                    <?php $this->language_notice(); ?>
                     <table class="form-table">
                         <tr>
                             <th><?php _e('Welcome message', 'newsletter') ?></th>
                             <td>
-                                <?php $controls->wp_editor('confirmed_text'); ?>
+                                <?php $controls->checkbox2('confirmed_text_custom', 'Customize', ['onchange' => 'tnp_refresh_binds()']); ?>
+                                <div data-bind="options-confirmed_text_custom">
+                                    <?php $controls->wp_editor('confirmed_text', ['editor_height' => 150], ['default' => $this->get_default_text('confirmed_text')]); ?>
+                                </div>
+                                <div data-bind="!options-confirmed_text_custom" class="tnpc-default-text">
+                                    <?php echo wp_kses_post($this->get_default_text('confirmed_text')) ?>
+                                </div>
                             </td>
                         </tr>
 
@@ -253,14 +285,28 @@ if ($controls->is_action()) {
                                 <?php $controls->textarea('confirmed_tracking'); ?>
                             </td>
                         </tr>
+                    </table>
 
-                        <!-- WELCOME/CONFIRMED EMAIL -->
+                    <!-- WELCOME/CONFIRMED EMAIL -->
+                    <table class="form-table">
                         <tr>
                             <th>
                                 <?php _e('Welcome email', 'newsletter') ?>
                             </th>
                             <td>
-                                <?php $controls->email('confirmed', 'wordpress', $is_all_languages); ?>
+                                <?php if (!$language) { ?>
+                                    <?php $controls->disabled('confirmed_disabled') ?>
+                                <?php } ?>
+
+                                <?php $controls->text('confirmed_subject', 70, $this->get_default_text('confirmed_subject')); ?>
+                                <br><br>
+                                <?php $controls->checkbox2('confirmed_message_custom', 'Customize', ['onchange' => 'tnp_refresh_binds()']); ?>
+                                <div data-bind="options-confirmed_message_custom">
+                                    <?php $controls->wp_editor('confirmed_message', ['editor_height' => 150], ['default' => $this->get_default_text('confirmed_message')]); ?>
+                                </div>
+                                <div data-bind="!options-confirmed_message_custom" class="tnpc-default-text">
+                                    <?php echo wp_kses_post($this->get_default_text('confirmed_message')) ?>
+                                </div>
                                 <br>
                                 <?php $controls->btn('test-confirmed', __('Test', 'newsletter'), ['secondary' => true]); ?>
                             </td>
@@ -269,16 +315,23 @@ if ($controls->is_action()) {
                     </table>
                 </div>
 
+                <?php if (NEWSLETTER_DEBUG) { ?>
+                    <div id="tabs-debug">
+                        <pre><?php echo esc_html(json_encode($this->get_db_options('', $language), JSON_PRETTY_PRINT)) ?></pre>
+                    </div>
+                <?php } ?>
+
             </div>
 
             <p>
                 <?php $controls->button_save() ?>
-                <?php $controls->button_reset() ?>
             </p>
 
         </form>
+
+
     </div>
 
-    <?php include NEWSLETTER_DIR . '/tnp-footer.php'; ?>
+    <?php include NEWSLETTER_ADMIN_FOOTER ?>
 
 </div>

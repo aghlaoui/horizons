@@ -5,6 +5,7 @@ WP-Cache Config Sample File
 See wp-cache.php for author details.
 */
 
+$dismiss_readable_warning = 1;
 $wp_cache_home_path = '/';
 $wp_cache_slash_check = 1;
 $cache_page_secret = 'a21aa3aba8047b45280c3ad8e3491d54';
@@ -13,7 +14,7 @@ if ( ! defined('WPCACHEHOME') )
 	define( 'WPCACHEHOME', WP_CONTENT_DIR . "/plugins/wp-super-cache/" );
 
 $cache_compression = 1;
-$cache_enabled = true;
+$cache_enabled = false;
 $super_cache_enabled = true;
 $cache_max_time = 1800;
 //$use_flock = true; // Set it true or false if you know what to use

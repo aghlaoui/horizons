@@ -1,9 +1,5 @@
 /* This is loaded inline in the main/index.php file */
 
-#wpfooter {
-    position: relative;
-}
-
 .tnp-dashboard {
     /*background-color: #f2f5f9;*/
     /*color: #222222;*/
@@ -20,6 +16,12 @@
     height: 0;
 }
 
+.tnp-dashboard .tnp-cards-container {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+}
+
 .tnp-dashboard .tnp-card {
     flex: 1 0;
     align-content: flex-start;
@@ -34,6 +36,7 @@
     color: var(--tnp-text);
     display: flex;
     flex-wrap: wrap;
+    flex-direction: column;
     position: relative;
 }
 
@@ -42,9 +45,14 @@
     color: inherit !important;
 }
 
+.tnp-dashboard .tnp-card .tnp-card-header {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+}
 
 .tnp-dashboard .tnp-card .tnp-card-title {
-    flex-basis: 80%;
+    /*flex-basis: 80%;*/
     font-weight: bold;
     margin: 0px 0px 30px;
     font-size: 1rem;
@@ -53,7 +61,7 @@
 }
 
 .tnp-dashboard .tnp-card .tnp-card-upper-buttons {
-    flex-basis: 10%;
+    /*flex-basis: 10%;*/
     font-weight: normal;
     margin: 0px 0px 10px;
     font-size: 15px;
@@ -144,6 +152,8 @@
     border-radius: 15px;
     font-size: 15px;
     margin: 10px;
+    width: fit-content;
+    float: left;
 }
 
 .tnp-dashboard .tnp-card .tnp-card-documentation-index svg {

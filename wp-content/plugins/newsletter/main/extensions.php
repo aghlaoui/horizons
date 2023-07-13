@@ -1,10 +1,9 @@
 <?php
-/* @var $this Newsletter */
-defined('ABSPATH') || exit;
+/* @var $this NewsletterMainAdmin */
+/* @var $controls NewsletterControls */
 
-include_once NEWSLETTER_INCLUDES_DIR . '/controls.php';
-$controls = new NewsletterControls();
-$extensions = $this->getTnpExtensions();
+defined('ABSPATH') || exit;
+$extensions = Newsletter::instance()->getTnpExtensions();
 
 if ($controls->is_action('activate')) {
     $result = activate_plugin('newsletter-extensions/extensions.php');
@@ -12,7 +11,7 @@ if ($controls->is_action('activate')) {
         $controls->errors .= __('Error while activating:', 'newsletter') . " " . $result->get_error_message();
     } else {
         wp_clean_plugins_cache(false);
-        $this->clear_extensions_cache();
+        delete_transient('tnp_extensions_json');
         $controls->js_redirect('admin.php?page=newsletter_extensions_index');
     }
 }
@@ -76,9 +75,12 @@ function tnp_extensions_table($extensions, $category) {
 
 <div class="wrap tnp-main tnp-main-extensions" id="tnp-wrap">
 
-    <?php include NEWSLETTER_DIR . '/tnp-header.php'; ?>
+    <?php include NEWSLETTER_DIR . '/header.php'; ?>
 
     <div id="tnp-body">
+        
+        <?php $controls->show() ?>
+        
         <?php if (is_wp_error(validate_plugin('newsletter-extensions/extensions.php'))) { ?>
             <div id="tnp-promo">
 

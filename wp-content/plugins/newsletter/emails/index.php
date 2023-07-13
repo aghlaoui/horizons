@@ -1,14 +1,14 @@
 <?php
-/* @var $this NewsletterEmails */
+/* @var $this NewsletterEmailsAdmin */
+/* @var $controls NewsletterControls */
+/* @var $logger NewsletterLogger */
+
 defined('ABSPATH') || exit;
 
-require_once NEWSLETTER_INCLUDES_DIR . '/controls.php';
 require_once NEWSLETTER_INCLUDES_DIR . '/paginator.php';
 
-$controls = new NewsletterControls();
-
 if ($controls->is_action('copy')) {
-    $original = Newsletter::instance()->get_email($_POST['btn']);
+    $original = $this->get_email($_POST['btn']);
     $email = array();
     $email['subject'] = $original->subject;
     $email['message'] = $original->message;
@@ -29,7 +29,7 @@ if ($controls->is_action('delete')) {
 }
 
 if ($controls->is_action('delete_selected')) {
-    $r = Newsletter::instance()->delete_email($_POST['ids']);
+    $r = $this->delete_email($_POST['ids']);
     $controls->messages .= $r . ' message(s) deleted';
 }
 
@@ -87,7 +87,7 @@ $emails = $pagination_controller->get_items();
                             <td>
                                 <?php
                                 if ($email->subject)
-                                    echo htmlspecialchars($email->subject);
+                                    echo esc_html($email->subject);
                                 else
                                     echo "Newsletter #" . $email->id;
                                 ?>
@@ -107,7 +107,7 @@ $emails = $pagination_controller->get_items();
                             </td>
 
                             <td style="white-space: nowrap">
-                                <?php $controls->button_icon_statistics(NewsletterStatistics::instance()->get_statistics_url($email->id), ['secondary'=>true]) ?>
+                                <?php $controls->button_icon_statistics(NewsletterStatisticsAdmin::instance()->get_statistics_url($email->id), ['secondary'=>true]) ?>
                                 <?php $controls->button_icon_view(home_url('/') . '?na=view&id=' . $email->id) ?>
                             </td>
 

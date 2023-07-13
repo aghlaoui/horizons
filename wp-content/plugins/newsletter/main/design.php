@@ -1,26 +1,14 @@
 <?php
-/* @var $this Newsletter */
+/* @var $this NewsletterMain */
+/* @var $controls NewsletterControls */
+
 defined('ABSPATH') || exit;
-
-include_once NEWSLETTER_INCLUDES_DIR . '/controls.php';
-$controls = new NewsletterControls();
-
-$current_language = $this->get_current_language();
-
-$is_all_languages = $this->is_all_languages();
-
-//if (!$is_all_languages) {
-//    $controls->warnings[] = 'You are configuring the language "<strong>' . $current_language . '</strong>". Switch to "all languages" to see every options.';
-//}
 
 if (!$controls->is_action()) {
     $controls->data = get_option('newsletter_main');
 } else {
 
     if ($controls->is_action('save')) {
-        $controls->data['googleplus_url'] = '';
-        $this->merge_options($controls->data);
-        $this->save_options($controls->data, 'info');
         $controls->add_message_saved();
     }
 }
@@ -32,7 +20,7 @@ $controls->warnings[] = 'Warnings example with long text';
 
 <div class="wrap" id="tnp-wrap">
 
-    <?php include NEWSLETTER_DIR . '/tnp-header.php'; ?>
+    <?php include NEWSLETTER_DIR . '/header.php'; ?>
 
     <div id="tnp-heading">
         <?php $controls->title_help('#')?>
@@ -49,6 +37,8 @@ $controls->warnings[] = 'Warnings example with long text';
 
     </div>
     <div id="tnp-body">
+        
+        <?php $controls->show()?>
 
         <form method="post" action="">
             <?php $controls->init(); ?>

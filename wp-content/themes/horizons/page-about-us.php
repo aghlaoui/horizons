@@ -55,6 +55,7 @@
                 </div>
             </div>
         </div>
+    </div>
 </section>
 <!-- Team -->
 <section class="team section-padding bg-navy">

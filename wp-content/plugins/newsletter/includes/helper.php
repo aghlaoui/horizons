@@ -429,9 +429,9 @@ function tnp_composer_block_posts_get_media($post, $size, $default_image_url = n
 }
 
 function tnp_outlook_wrapper_open($width = 600) {
-    return NewsletterEmails::get_outlook_wrapper_open($width);
+    return NewsletterComposer::get_outlook_wrapper_open($width);
 }
 
 function tnp_outlook_wrapper_close() {
-    return NewsletterEmails::get_outlook_wrapper_close();
+    return NewsletterComposer::get_outlook_wrapper_close();
 }

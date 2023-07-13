@@ -1,14 +1,9 @@
 <?php
-/* @var $this NewsletterUsers */
+/* @var $wpdb wpdb */
+/* @var $this NewsletterUsersAdmin */
+/* @var $controls NewsletterControls */
+
 defined('ABSPATH') || exit;
-
-require_once NEWSLETTER_INCLUDES_DIR . '/controls.php';
-
-$controls = new NewsletterControls();
-
-$options = $controls->data;
-$options_profile = get_option('newsletter_profile');
-$options_main = get_option('newsletter_main');
 
 // Move to base zero
 if ($controls->is_action()) {
@@ -17,9 +12,9 @@ if ($controls->is_action()) {
     } else {
         $controls->data['search_page'] = (int) $controls->data['search_page'] - 1;
     }
-    $this->save_options($controls->data, 'search');
+    $this->save_options($controls->data, 'users_search');
 } else {
-    $controls->data = $this->get_options('search');
+    $controls->data = $this->get_options('users_search');
     if (empty($controls->data['search_page'])) {
         $controls->data['search_page'] = 0;
     }
@@ -113,6 +108,7 @@ $list = $wpdb->get_results($query);
 
 // Move to base 1
 $controls->data['search_page']++;
+
 ?>
 
 <style>
@@ -121,20 +117,19 @@ $controls->data['search_page']++;
 
 <div class="wrap tnp-users tnp-users-index" id="tnp-wrap">
 
-    <?php include NEWSLETTER_DIR . '/tnp-header.php'; ?>
+    <?php include NEWSLETTER_DIR . '/header.php'; ?>
 
     <div id="tnp-heading">
 
         <?php $controls->title_help('/subscribers-and-management/') ?>
         <h2><?php _e('Subscribers', 'newsletter') ?></h2>
-
-        <p>
-            See the <a href="admin.php?page=newsletter_users_massive">maintenance panel</a> to move subscribers between list, massively delete and so on.
-        </p>
+        <?php include __DIR__ . '/nav.php' ?>
 
     </div>
 
     <div id="tnp-body">
+        
+        <?php $controls->show(); ?>
 
         <form id="channel" method="post" action="">
             <?php $controls->init(); ?>

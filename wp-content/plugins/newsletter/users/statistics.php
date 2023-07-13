@@ -1,14 +1,14 @@
 <?php
-/* @var $this NewsletterUsers */
-defined('ABSPATH') || exit;
+/* @var $this NewsletterUsersAdmin */
+/* @var $controls NewsletterControls */
 
-include_once NEWSLETTER_INCLUDES_DIR . '/controls.php';
-$controls = new NewsletterControls();
+defined('ABSPATH') || exit;
 
 wp_enqueue_script('tnp-chart');
 
 $all_count = $wpdb->get_var("select count(*) from " . NEWSLETTER_USERS_TABLE);
-$options_profile = get_option('newsletter_profile');
+
+$referres = $wpdb->get_results("select referrer, count(*) as total, SUM(if(status='C', 1, 0)) as confirmed, SUM(if(status='S', 1, 0)) as unconfirmed, SUM(if(status='B', 1, 0)) as bounced, SUM(if(status='U', 1, 0)) as unsubscribed, SUM(if(status='P', 1, 0)) as complained from " . NEWSLETTER_USERS_TABLE . " group by referrer order by confirmed desc");
 ?>
 
 <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
@@ -19,16 +19,18 @@ $options_profile = get_option('newsletter_profile');
 </script>
 
 <div class="wrap" id="tnp-wrap">
-    
-    <?php include NEWSLETTER_DIR . '/tnp-header.php'; ?>
+
+    <?php include NEWSLETTER_DIR . '/header.php'; ?>
 
     <div id="tnp-heading">
         <?php $controls->title_help('/subscribers-and-management/') ?>
-        <h2><?php _e('Subscriber statistics', 'newsletter') ?></h2>
-
+        <h2><?php _e('Subscribers', 'newsletter') ?></h2>
+        <?php include __DIR__ . '/nav.php' ?>
     </div>
 
     <div id="tnp-body" class="tnp-users-statistics">
+        
+        <?php $controls->show(); ?>
 
         <?php $controls->init(); ?>
 
@@ -245,12 +247,6 @@ $options_profile = get_option('newsletter_profile');
 
 
             <div id="tabs-referrers">
-                <p>
-                    <?php $controls->panel_help('https://www.thenewsletterplugin.com/documentation/subscribers-statistics#referrer') ?>
-                </p>
-                <?php
-                $list = $wpdb->get_results("select referrer, count(*) as total, SUM(if(status='C', 1, 0)) as confirmed, SUM(if(status='S', 1, 0)) as unconfirmed, SUM(if(status='B', 1, 0)) as bounced, SUM(if(status='U', 1, 0)) as unsubscribed, SUM(if(status='P', 1, 0)) as complained from " . NEWSLETTER_USERS_TABLE . " group by referrer order by confirmed desc");
-                ?>
                 <table class="widefat" style="width: auto">
                     <thead>
                         <tr>
@@ -264,7 +260,7 @@ $options_profile = get_option('newsletter_profile');
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach ($list as $row) { ?>
+                        <?php foreach ($referres as $row) { ?>
                             <tr>
                                 <td><?php echo empty($row->referrer) ? '[not set]' : esc_html($row->referrer) ?></td>
                                 <td style="text-align: right"><?php echo $row->total; ?></td>

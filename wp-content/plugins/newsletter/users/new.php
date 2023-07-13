@@ -1,5 +1,7 @@
 <?php
-/* @var $this NewsletterUsers */
+/* @var $this NewsletterUsersAdmin */
+/* @var $controls NewsletterControls */
+
 defined('ABSPATH') || exit;
 
 require_once NEWSLETTER_INCLUDES_DIR . '/controls.php';
@@ -30,7 +32,7 @@ if ($controls->is_action('save')) {
 
 <div class="wrap" id="tnp-wrap">
 
-    <?php include NEWSLETTER_DIR . '/tnp-header.php'; ?>
+    <?php include NEWSLETTER_ADMIN_HEADER ?>
 
     <div id="tnp-heading">
 
@@ -39,6 +41,8 @@ if ($controls->is_action('save')) {
     </div>
 
     <div id="tnp-body" class="tnp-users tnp-users-new">
+        
+        <?php $controls->show(); ?>
 
         <form method="post" action="">
             <?php $controls->init(); ?>

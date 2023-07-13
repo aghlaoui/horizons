@@ -10,6 +10,7 @@
 /* @var $wpdb wpdb */
 
 $defaults = array(
+    'order' => '',
     'title' => 'An Awesome Title',
     'text' => 'This is just a simple text you should change',
     'font_family' => '',
@@ -20,6 +21,7 @@ $defaults = array(
     'title_font_size' => '',
     'title_font_weight' => '',
     'title_font_color' => '',
+    'title_font_align' => 'center',
     'layout' => 'full',
     'button_url' => '',
     'button_label' => __('Click Here', 'newsletter'),
@@ -53,9 +55,29 @@ if (!empty($options['schema'])) {
         $options['button_font_color'] = '#ffffff';
         $options['button_background'] = '#256F9C';
     }
+
+    if ($options['schema'] === 'orangeblue') {
+        $options['block_background'] = '#16537e';
+        $options['title_font_color'] = '#ffffff';
+        $options['title_font_align'] = 'left';
+        $options['title_font_size'] = '40px';
+        $options['title_font_family'] = 'Times New Roman, Times, serif';
+        
+        $options['font_align'] = 'left';
+        $options['button_align'] = 'left';
+        
+        $options['font_color'] = '#f1c232';
+        $options['button_font_color'] = '#444444';
+        $options['button_background'] = '#fff';
+        $options['block_padding_top'] = 30;
+        $options['block_padding_bottom'] = 30;
+        $options['block_padding_left'] = 30;
+        $options['block_padding_right'] = 30;
+    }
 }
 
 $layout = $options['layout'];
+$order = $options['order'];
 
 if ($layout == 'full') {
     $options = array_merge(array('block_padding_left' => 0, 'block_padding_right' => 0), $options);
@@ -64,6 +86,7 @@ if ($layout == 'full') {
 }
 
 $title_style = TNP_Composer::get_title_style($options, 'title', $composer);
+
 $text_style = TNP_Composer::get_text_style($options, '', $composer);
 
 $layout = $options['layout'];
@@ -80,7 +103,7 @@ if (!empty($options['image']['id'])) {
         $image_width = $composer['width'] - $options['block_padding_left'] - $options['block_padding_right'];
         $media = tnp_resize_2x($options['image']['id'], [$image_width, 0]);
     } else {
-        $td_width = round(($composer['width'] - $options['block_padding_left'] - $options['block_padding_right'] - 20)/2);
+        $td_width = round(($composer['width'] - $options['block_padding_left'] - $options['block_padding_right'] - 20) / 2);
         //$image_width = 300 - $options['block_padding_left'];
         $media = tnp_resize_2x($options['image']['id'], [$td_width, 0]);
     }

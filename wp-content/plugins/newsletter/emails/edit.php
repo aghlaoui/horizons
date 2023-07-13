@@ -27,21 +27,21 @@ $email_id = $email['id'];
 
 /* Satus changes which require a reload */
 if ($controls->is_action('pause')) {
-    $this->admin_logger->info('Newsletter ' . $email_id . ' paused');
+    $this->logger->info('Newsletter ' . $email_id . ' paused');
     $wpdb->update(NEWSLETTER_EMAILS_TABLE, array('status' => 'paused'), array('id' => $email_id));
     $email = $this->get_email($_GET['id'], ARRAY_A);
     tnp_prepare_controls($email, $controls);
 }
 
 if ($controls->is_action('continue')) {
-    $this->admin_logger->info('Newsletter ' . $email_id . ' restarted');
+    $this->logger->info('Newsletter ' . $email_id . ' restarted');
     $wpdb->update(NEWSLETTER_EMAILS_TABLE, array('status' => 'sending'), array('id' => $email_id));
     $email = $this->get_email($_GET['id'], ARRAY_A);
     tnp_prepare_controls($email, $controls);
 }
 
 if ($controls->is_action('abort')) {
-    $this->admin_logger->info('Newsletter ' . $email_id . ' aborted');
+    $this->logger->info('Newsletter ' . $email_id . ' aborted');
     $wpdb->query("update " . NEWSLETTER_EMAILS_TABLE . " set last_id=0, sent=0, status='new' where id=" . $email_id);
     $email = $this->get_email($_GET['id'], ARRAY_A);
     tnp_prepare_controls($email, $controls);
@@ -97,7 +97,7 @@ if (!$controls->is_action()) {
 
 if ($controls->is_action('html')) {
 
-    $this->admin_logger->info('Newsletter ' . $email_id . ' converted to HTML');
+    $this->logger->info('Newsletter ' . $email_id . ' converted to HTML');
 
     $data = [];
     $data['editor'] = NewsletterEmails::EDITOR_HTML;
@@ -125,11 +125,11 @@ if ($controls->is_action('test') || $controls->is_action('save') || $controls->i
     } else {
         $email['updated'] = time();
         if ($controls->is_action('save')) {
-            $this->admin_logger->info('Saving newsletter: ' . $email_id);
+            $this->logger->info('Saving newsletter: ' . $email_id);
         } else if ($controls->is_action('send')) {
-            $this->admin_logger->info('Sending newsletter: ' . $email_id);
+            $this->logger->info('Sending newsletter: ' . $email_id);
         } else if ($controls->is_action('schedule')) {
-            $this->admin_logger->info('Scheduling newsletter: ' . $email_id);
+            $this->logger->info('Scheduling newsletter: ' . $email_id);
         }
 
         $email['subject'] = $controls->data['subject'];
@@ -269,11 +269,10 @@ if ($controls->is_action('test') || $controls->is_action('save') || $controls->i
 
 if (empty($controls->errors) && ($controls->is_action('send') || $controls->is_action('schedule'))) {
 
-    NewsletterStatistics::instance()->reset_stats($email);
-
     if ($email['subject'] == '') {
         $controls->errors = __('A subject is required to send', 'newsletter');
     } else {
+        NewsletterStatistics::instance()->reset_stats($email);
         $wpdb->update(NEWSLETTER_EMAILS_TABLE, array('status' => TNP_Email::STATUS_SENDING), array('id' => $email_id));
         $email['status'] = TNP_Email::STATUS_SENDING;
         if ($controls->is_action('send')) {
@@ -309,7 +308,7 @@ if ($email['status'] != 'sent') {
 
 <div class="wrap tnp-emails tnp-emails-edit" id="tnp-wrap">
 
-    <?php include NEWSLETTER_DIR . '/tnp-header.php'; ?>
+    <?php include NEWSLETTER_ADMIN_HEADER ?>
 
     <div id="tnp-heading">
         <?php $controls->title_help('/newsletter-targeting') ?>
@@ -319,6 +318,8 @@ if ($email['status'] != 'sent') {
     </div>
 
     <div id="tnp-body">
+        <?php $controls->show() ?>
+        
         <form method="post" action="" id="newsletter-form">
             <?php $controls->init(['cookie_name' => 'newsletter_emails_edit_tab']); ?>
             <?php $controls->hidden('updated') ?>
@@ -453,13 +454,14 @@ if ($email['status'] != 'sent') {
                             </td>
                         </tr>
                         <?php
-                        $fields = TNP_Profile_Service::get_profiles('', TNP_Profile::TYPE_SELECT);
+                        $fields = $this->get_customfields();
                         ?>
                         <?php if (!empty($fields)) { ?>
                             <tr>
                                 <th><?php _e('Profile fields', 'newsletter') ?></th>
                                 <td>
                                     <?php foreach ($fields as $profile) { ?>
+                                        <?php if ($profile->type !== TNP_Profile::TYPE_SELECT) continue; ?>
                                         <?php echo esc_html($profile->name), ' ', __('is one of:', 'newsletter') ?>
                                         <?php $controls->select2("options_profile_$profile->id", $profile->options, null, true, null, __('Do not filter by this field', 'newsletter')); ?>
                                         <br>
